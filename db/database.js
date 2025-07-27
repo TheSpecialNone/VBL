@@ -14,34 +14,19 @@ const contractSchema = new mongoose.Schema({
 const Contract = mongoose.model('Contract', contractSchema);
 
 module.exports = {
-  getContractedTeam: async (userId, callback) => {
-    try {
-      const contract = await Contract.findOne({ userId });
-      callback(null, contract);
-    } catch (err) {
-      callback(err);
-    }
+  getContractedTeam: async (userId) => {
+    return await Contract.findOne({ userId });
   },
 
-  contractPlayer: async (userId, teamName, emoji, callback) => {
-    try {
-      await Contract.updateOne(
-        { userId },
-        { $set: { teamName, emoji } },
-        { upsert: true }
-      );
-      callback(null);
-    } catch (err) {
-      callback(err);
-    }
+  contractPlayer: async (userId, teamName, emoji) => {
+    await Contract.updateOne(
+      { userId },
+      { $set: { teamName, emoji } },
+      { upsert: true }
+    );
   },
 
-  releasePlayer: async (userId, callback) => {
-    try {
-      await Contract.deleteOne({ userId });
-      callback(null);
-    } catch (err) {
-      callback(err);
-    }
+  releasePlayer: async (userId) => {
+    await Contract.deleteOne({ userId });
   }
 };

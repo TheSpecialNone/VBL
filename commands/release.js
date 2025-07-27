@@ -9,42 +9,44 @@ module.exports = {
     .addUserOption(option => option.setName('releasee').setDescription('User to release').setRequired(true)),
 
   async execute(interaction) {
-    const releasee = interaction.options.getUser('releasee');
-    const sender = interaction.user.id;
+    await interaction.deferReply({ ephemeral: true });
 
-    if (!managers[sender]) 
-      return interaction.reply({ content: '❌ You are not an authorized manager.', ephemeral: true });
+    try {
+      const releasee = interaction.options.getUser('releasee');
+      const sender = interaction.user.id;
 
-    if (managers[releasee.id]) 
-      return interaction.reply({ content: '❌ You cannot release another manager.', ephemeral: true });
-
-    if (releasee.id === sender) 
-      return interaction.reply({ content: '❌ You cannot release yourself.', ephemeral: true });
-
-    if (releasee.bot) 
-      return interaction.reply({ content: '❌ You cannot release bots.', ephemeral: true });
-
-    const senderTeam = managers[sender].team;
-
-    db.getContractedTeam(releasee.id, async (err, row) => {
-      if (err) {
-        return interaction.reply({ content: '⚠️ Database error.', ephemeral: true });
+      if (!managers[sender]) {
+        return interaction.editReply({ content: '❌ You are not an authorized manager.' });
+      }
+      if (managers[releasee.id]) {
+        return interaction.editReply({ content: '❌ You cannot release another manager.' });
+      }
+      if (releasee.id === sender) {
+        return interaction.editReply({ content: '❌ You cannot release yourself.' });
+      }
+      if (releasee.bot) {
+        return interaction.editReply({ content: '❌ You cannot release bots.' });
       }
 
+      const senderTeam = managers[sender].team;
+
+      const row = await db.getContractedTeam(releasee.id);
       if (!row) {
-        return interaction.reply({ content: `❌ <@${releasee.id}> is not contracted to any team.`, ephemeral: true });
+        return interaction.editReply({ content: `❌ <@${releasee.id}> is not contracted to any team.` });
       }
-
       if (row.teamName !== senderTeam) {
-        return interaction.reply({ content: `❌ You can only release players contracted to your own team (${senderTeam}).`, ephemeral: true });
+        return interaction.editReply({ content: `❌ You can only release players contracted to your own team (${senderTeam}).` });
       }
 
-      db.releasePlayer(releasee.id, async () => {
-        const releaseChannel = await interaction.client.channels.fetch('1398678255518613696');
-        releaseChannel.send(`🔔 | **<@${releasee.id}>** has been released from ${row.emoji} \`${row.teamName}\``);
+      await db.releasePlayer(releasee.id);
 
-        await interaction.reply({ content: `✅ <@${releasee.id}> released from ${row.emoji} \`${row.teamName}\`.`, ephemeral: true });
-      });
-    });
+      const releaseChannel = await interaction.client.channels.fetch('1398678255518613696');
+      releaseChannel.send(`🔔 | **<@${releasee.id}>** has been released from ${row.emoji} \`${row.teamName}\``);
+
+      return interaction.editReply({ content: `✅ <@${releasee.id}> released from ${row.emoji} \`${row.teamName}\`.` });
+    } catch (error) {
+      console.error(error);
+      return interaction.editReply({ content: '⚠️ An error occurred while processing the release command.' });
+    }
   }
 };
