@@ -1,34 +1,31 @@
-const mongoose = require('mongoose');
-require('dotenv').config();
+const admin = require('firebase-admin');
+const fs = require('fs');
 
+if (process.env.FIREBASE_KEY_B64) {
+  const buffer = Buffer.from(process.env.FIREBASE_KEY_B64, 'base64');
+  fs.writeFileSync('firebase-key.json', buffer);
+}
 
+const serviceAccount = require('../firebase-key.json'); 
 
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('MongoDB connected'))
-  .catch(err => console.error('MongoDB connection error:', err));
-
-const contractSchema = new mongoose.Schema({
-  userId: { type: String, required: true, unique: true },
-  teamName: String,
-  emoji: String,
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
 });
 
-const Contract = mongoose.model('Contract', contractSchema);
+const db = admin.firestore();
+const contracts = db.collection('contracts');
 
 module.exports = {
   getContractedTeam: async (userId) => {
-    return await Contract.findOne({ userId });
+    const doc = await contracts.doc(userId).get();
+    return doc.exists ? doc.data() : null;
   },
 
   contractPlayer: async (userId, teamName, emoji) => {
-    await Contract.updateOne(
-      { userId },
-      { $set: { teamName, emoji } },
-      { upsert: true }
-    );
+    await contracts.doc(userId).set({ teamName, emoji });
   },
 
   releasePlayer: async (userId) => {
-    await Contract.deleteOne({ userId });
+    await contracts.doc(userId).delete();
   }
 };
