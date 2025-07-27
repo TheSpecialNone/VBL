@@ -57,21 +57,25 @@ client.once('ready', () => {
 
 client.on('interactionCreate', async interaction => {
   try {
-    if (interaction.isButton()) {
+    if (interaction.isChatInputCommand()) {
+      const command = client.commands.get(interaction.commandName);
+      if (!command) return;
+      await command.execute(interaction);
+    }
+    else if (interaction.isButton()) {
       const [action, managerId, teamName, signeeId] = interaction.customId.split('_');
-
       if (interaction.user.id !== signeeId) {
-        await interaction.deferUpdate();
-        return interaction.followUp({ content: "❌ You can't respond to someone else's contract!", ephemeral: true });
+        return interaction.reply({ content: "❌ You can't respond to someone else's contract!", ephemeral: true });
       }
 
+      // Defer update to avoid interaction timeout
       await interaction.deferUpdate();
 
       const { managers } = require('./utils/managers');
       const db = require('./db/database');
 
       if (!managers[managerId]) {
-        return interaction.followUp({ content: '❌ Invalid manager data.', ephemeral: true });
+        return interaction.editReply({ content: '❌ Invalid manager data.', components: [], embeds: [] });
       }
 
       const teamData = managers[managerId];
@@ -80,33 +84,34 @@ client.on('interactionCreate', async interaction => {
       if (action === 'accept') {
         db.getContractedTeam(member.id, async (err, row) => {
           if (err) {
-            return interaction.followUp({ content: '⚠️ Database error.', ephemeral: true });
+            return interaction.editReply({ content: '⚠️ Database error.', components: [], embeds: [] });
           }
           if (row) {
-            return interaction.followUp({ content: `❌ You are already contracted to ${row.emoji} \`${row.teamName}\`.`, ephemeral: true });
+            return interaction.editReply({ content: `❌ You are already contracted to ${row.emoji} \`${row.teamName}\`.`, components: [], embeds: [] });
           }
-          db.contractPlayer(member.id, teamName, teamData.emoji, async (contractErr) => {
+          db.contractPlayer(member.id, teamName, teamData.emoji, (contractErr) => {
             if (contractErr) {
-              return interaction.followUp({ content: '⚠️ Error saving contract to database.', ephemeral: true });
+              return interaction.editReply({ content: '⚠️ Error saving contract to database.', components: [], embeds: [] });
             }
-            try {
-              const signingChannel = await interaction.client.channels.fetch('1398678243040559214');
-              signingChannel.send(`🔔 | <@${member.id}> has joined ${teamData.emoji} \`${teamData.team}\``);
-              return interaction.followUp({ content: `✅ Contract signed with ${teamData.emoji} \`${teamData.team}\`.`, ephemeral: true });
-            } catch (fetchErr) {
-              console.error('Error fetching signing channel:', fetchErr);
-              return interaction.followUp({ content: '⚠️ Error sending message to signing channel.', ephemeral: true });
-            }
+            interaction.client.channels.fetch('1398678243040559214')
+              .then(signingChannel => {
+                signingChannel.send(`🔔 | <@${member.id}> has joined ${teamData.emoji} \`${teamData.team}\``);
+                return interaction.editReply({ content: `✅ Contract signed with ${teamData.emoji} \`${teamData.team}\`.`, components: [], embeds: [] });
+              })
+              .catch(fetchErr => {
+                console.error('Error fetching signing channel:', fetchErr);
+                interaction.editReply({ content: '⚠️ Error sending message to signing channel.', components: [], embeds: [] });
+              });
           });
         });
-      } else if (action === 'decline') {
-        return interaction.followUp({ content: `❌ | <@${member.id}> has declined the contract.`, ephemeral: true });
+      }
+      else if (action === 'decline') {
+        await interaction.editReply({ content: `❌ | <@${member.id}> has declined the contract.`, components: [], embeds: [] });
       }
     }
   } catch (err) {
     console.error('Error handling interaction:', err);
-
-    if (interaction.deferred || interaction.replied) {
+    if (interaction.replied || interaction.deferred) {
       await interaction.followUp({ content: '❌ There was an error processing this interaction.', ephemeral: true });
     } else {
       await interaction.reply({ content: '❌ There was an error processing this interaction.', ephemeral: true });
@@ -115,3 +120,5 @@ client.on('interactionCreate', async interaction => {
 });
 
 client.login(process.env.TOKEN);
+
+
