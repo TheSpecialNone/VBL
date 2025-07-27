@@ -107,7 +107,7 @@ module.exports = {
 
     embed.addFields({
       name: '🌍 Available Regions',
-      value: 'GMT, EST, CST, PST, UTC, WEST, EET, EEST, MSK, OTHER',
+      value: 'GMT, BST, EST, CST, PST, UTC, WEST, EET, EEST, MSK, OTHER',
       inline: true
     });
 

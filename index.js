@@ -8,6 +8,20 @@ client.commands = new Collection();
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 const commands = [];
 
+const express = require("express");
+const app = express();
+
+
+app.get("/", (req, res) => {
+  res.send("Bot is alive!");
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Express server running on port ${PORT}`);
+});
+
+
 for (const file of commandFiles) {
     const command = require(`./commands/${file}`);
     commands.push(command.data.toJSON());
