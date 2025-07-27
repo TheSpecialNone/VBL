@@ -35,15 +35,6 @@ module.exports = {
         return interaction.reply({ content: '⚠️ Database error.', ephemeral: true });
       }
 
-
-
-
-
-
-
-
-
-
       if (row) {
         return interaction.reply({ content: `❌ <@${signee.id}> is already contracted to ${row.emoji} \`${row.teamName}\``, ephemeral: true });
       }
@@ -81,8 +72,5 @@ module.exports = {
 
       await interaction.reply({ content: `<@${signee.id}> Pending your decision!`, embeds: [embed], components: [buttons] });
     });
-
-
-
   }
 };
