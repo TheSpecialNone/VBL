@@ -12,15 +12,15 @@ const express = require("express");
 const app = express();
 
 
-app.get("/", (req, res) => {
-  res.send("Bot is alive!");
+app.get("/healthz", (req, res) => {
+  res.status(200).send("OK");
 });
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Express server running on port ${PORT}`);
+  console.log(`Health check server running on port ${PORT}`);
 });
-
 
 for (const file of commandFiles) {
     const command = require(`./commands/${file}`);
