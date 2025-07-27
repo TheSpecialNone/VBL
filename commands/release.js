@@ -41,11 +41,10 @@ module.exports = {
       await db.releasePlayer(releasee.id);
 
       const releaseChannel = await interaction.client.channels.fetch('1398678255518613696');
-      releaseChannel.send(`🔔 | **<@${releasee.id}>** has been released from ${row.emoji} \`${row.teamName}\``);
+      await releaseChannel.send(`🔔 | **<@${releasee.id}>** has been released from ${row.emoji} \`${row.teamName}\``);
 
       return interaction.editReply({ content: `✅ <@${releasee.id}> released from ${row.emoji} \`${row.teamName}\`.` });
-    } catch (error) {
-      console.error(error);
+    } catch {
       return interaction.editReply({ content: '⚠️ An error occurred while processing the release command.' });
     }
   }

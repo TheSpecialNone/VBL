@@ -5,7 +5,7 @@ const db = require('../db/database');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('forcerelease')
-    .setDescription('Force release a player from their team (Admin Only)')
+    .setDescription('Force release a player from their team (Director+)')
     .addUserOption(option => option.setName('releasee').setDescription('User to force release').setRequired(true))
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 
@@ -37,11 +37,10 @@ module.exports = {
       await db.releasePlayer(releasee.id);
 
       const releaseChannel = await interaction.client.channels.fetch('1398678255518613696');
-      releaseChannel.send(`⚡ | **<@${releasee.id}>** has been **FORCE RELEASED** from ${row.emoji} \`${row.teamName}\` by <@${sender}>`);
+      await releaseChannel.send(`⚡ | **<@${releasee.id}>** has been **FORCE RELEASED** from ${row.emoji} \`${row.teamName}\` by <@${sender}>`);
 
       return interaction.editReply({ content: `✅ <@${releasee.id}> force released from ${row.emoji} \`${row.teamName}\`.` });
-    } catch (error) {
-      console.error(error);
+    } catch {
       return interaction.editReply({ content: '⚠️ An error occurred while processing the forcerelease command.' });
     }
   }

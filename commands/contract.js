@@ -16,7 +16,7 @@ module.exports = {
     try {
       await interaction.deferReply({ ephemeral: true });
     } catch {
-      return; // Interaction expired or failed
+      return; 
     }
 
     try {
@@ -24,10 +24,7 @@ module.exports = {
       const signee = interaction.options.getUser('signee');
 
       if (!managers[sender]) {
-        if (interaction.deferred || interaction.replied) {
-          return interaction.editReply({ content: '❌ You are not an authorized manager.' });
-        }
-        return;
+        return interaction.editReply({ content: '❌ You are not an authorized manager.' });
       }
 
       if (managers[signee.id]) {
@@ -73,13 +70,17 @@ module.exports = {
           .setStyle(ButtonStyle.Danger)
       );
 
-      if (interaction.deferred || interaction.replied) {
-        await interaction.editReply({
-          content: `<@${signee.id}> Pending your decision!`,
-          embeds: [embed],
-          components: [buttons]
-        });
-      }
+   
+      await interaction.followUp({
+        content: `<@${signee.id}> Pending your decision!`,
+        embeds: [embed],
+        components: [buttons],
+        ephemeral: false
+      });
+
+
+      await interaction.editReply({ content: '✅ Contract sent.' });
+
     } catch {
       if (interaction.deferred || interaction.replied) {
         interaction.editReply({ content: '⚠️ An error occurred while processing the command.' });
