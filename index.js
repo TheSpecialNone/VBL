@@ -63,7 +63,15 @@ client.on('interactionCreate', async interaction => {
       await command.execute(interaction);
     }
     else if (interaction.isButton()) {
-      const [action, managerId, teamName, signeeId] = interaction.customId.split('_');
+      const parts = interaction.customId.split('|');
+      const action = parts[0];
+      const managerId = parts[1];
+      const signeeId = parts[parts.length - 1];
+      const teamName = parts.slice(2, parts.length - 1).join('|');
+
+      console.log('Button pressed:', interaction.customId);
+      console.log('Parsed parts:', { action, managerId, teamName, signeeId });
+
       if (interaction.user.id !== signeeId) {
         return interaction.reply({ content: "❌ You can't respond to someone else's contract!", ephemeral: true });
       }
@@ -117,5 +125,6 @@ client.on('interactionCreate', async interaction => {
     }
   }
 });
+
 
 client.login(process.env.TOKEN);

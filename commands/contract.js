@@ -65,11 +65,11 @@ module.exports = {
 
       const buttons = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
-          .setCustomId(`accept_${sender}_${teamData.team}_${signee.id}`)
+          .setCustomId(`accept|${sender}|${teamData.team}|${signee.id}`)
           .setLabel('Accept')
           .setStyle(ButtonStyle.Success),
         new ButtonBuilder()
-          .setCustomId(`decline_${sender}_${teamData.team}_${signee.id}`)
+          .setCustomId(`decline|${sender}|${teamData.team}|${signee.id}`)
           .setLabel('Decline')
           .setStyle(ButtonStyle.Danger)
       );
