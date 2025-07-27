@@ -51,7 +51,7 @@ client.once('ready', () => {
         status: 'dnd',
         activities: [{
             name: '/help for commands',
-            type: ActivityType.Watching
+            type: ActivityType.Listening
         }]
     });
 
