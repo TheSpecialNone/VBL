@@ -6,10 +6,16 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName('contract')
     .setDescription('Send a contract to a player')
-    .addUserOption(option => option.setName('signee').setDescription('User to send the contract to').setRequired(true)),
+    .addUserOption(option =>
+      option.setName('signee')
+        .setDescription('User to send the contract to')
+        .setRequired(true)
+    ),
 
   async execute(interaction) {
-    if (!enabled) return interaction.reply({ content: '⚠️ The transfer window is currently closed.', ephemeral: true });
+    if (!enabled) {
+      return interaction.reply({ content: '⚠️ The transfer window is currently closed.', ephemeral: true });
+    }
 
     const sender = interaction.user.id;
     const signee = interaction.options.getUser('signee');
@@ -19,22 +25,25 @@ module.exports = {
     }
 
     if (managers[signee.id]) {
-      return interaction.reply({ content: `❌ You cannot contract another manager.`, ephemeral: true });
+      return interaction.reply({ content: '❌ You cannot contract another manager.', ephemeral: true });
     }
 
     if (signee.id === sender) {
-      return interaction.reply({ content: `❌ You cannot contract yourself.`, ephemeral: true });
+      return interaction.reply({ content: '❌ You cannot contract yourself.', ephemeral: true });
     }
 
     if (signee.bot) {
-      return interaction.reply({ content: `❌ You cannot contract bots.`, ephemeral: true });
+      return interaction.reply({ content: '❌ You cannot contract bots.', ephemeral: true });
     }
+
+    await interaction.deferReply({ ephemeral: true });
 
     try {
       const row = await db.getContractedTeam(signee.id);
-
       if (row) {
-        return interaction.reply({ content: `❌ <@${signee.id}> is already contracted to ${row.emoji} \`${row.teamName}\``, ephemeral: true });
+        return interaction.editReply({
+          content: `❌ <@${signee.id}> is already contracted to ${row.emoji} \`${row.teamName}\``
+        });
       }
 
       const teamData = managers[sender];
@@ -65,10 +74,15 @@ module.exports = {
           .setStyle(ButtonStyle.Danger)
       );
 
-      await interaction.reply({ content: `<@${signee.id}> Pending your decision!`, embeds: [embed], components: [buttons] });
+      await interaction.editReply({
+        content: `<@${signee.id}> Pending your decision!`,
+        embeds: [embed],
+        components: [buttons]
+      });
+
     } catch (error) {
       console.error('Database error:', error);
-      return interaction.reply({ content: '⚠️ Database error.', ephemeral: true });
+      return interaction.editReply({ content: '⚠️ Database error occurred while processing the contract.' });
     }
   }
 };
