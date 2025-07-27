@@ -16,7 +16,7 @@ module.exports = {
     try {
       await interaction.deferReply({ ephemeral: true });
     } catch {
-      return; 
+      return; // Interaction expired or failed
     }
 
     try {
