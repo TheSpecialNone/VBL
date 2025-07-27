@@ -36,7 +36,7 @@ module.exports = {
       return interaction.reply({ content: '❌ You cannot contract bots.', ephemeral: true });
     }
 
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ ephemeral: false });
 
     try {
       const row = await db.getContractedTeam(signee.id);
