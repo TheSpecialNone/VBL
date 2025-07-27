@@ -13,15 +13,23 @@ module.exports = {
       return interaction.reply({ content: '⚠️ The transfer window is currently closed.', ephemeral: true });
     }
 
-    await interaction.deferReply({ ephemeral: true });
+    try {
+      await interaction.deferReply({ ephemeral: true });
+    } catch {
+      return; 
+    }
 
     try {
       const sender = interaction.user.id;
       const signee = interaction.options.getUser('signee');
 
       if (!managers[sender]) {
-        return interaction.editReply({ content: '❌ You are not an authorized manager.' });
+        if (interaction.deferred || interaction.replied) {
+          return interaction.editReply({ content: '❌ You are not an authorized manager.' });
+        }
+        return;
       }
+
       if (managers[signee.id]) {
         return interaction.editReply({ content: `❌ You cannot contract another manager.` });
       }
@@ -32,9 +40,7 @@ module.exports = {
         return interaction.editReply({ content: `❌ You cannot contract bots.` });
       }
 
-      // Assuming your db.getContractedTeam returns a Promise now
       const row = await db.getContractedTeam(signee.id);
-
       if (row) {
         return interaction.editReply({ content: `❌ <@${signee.id}> is already contracted to ${row.emoji} \`${row.teamName}\`` });
       }
@@ -67,10 +73,17 @@ module.exports = {
           .setStyle(ButtonStyle.Danger)
       );
 
-      await interaction.editReply({ content: `<@${signee.id}> Pending your decision!`, embeds: [embed], components: [buttons] });
-    } catch (error) {
-      console.error(error);
-      interaction.editReply({ content: '⚠️ An error occurred while processing the command.' });
+      if (interaction.deferred || interaction.replied) {
+        await interaction.editReply({
+          content: `<@${signee.id}> Pending your decision!`,
+          embeds: [embed],
+          components: [buttons]
+        });
+      }
+    } catch {
+      if (interaction.deferred || interaction.replied) {
+        interaction.editReply({ content: '⚠️ An error occurred while processing the command.' });
+      }
     }
   }
 };
