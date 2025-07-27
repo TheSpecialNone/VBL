@@ -57,12 +57,7 @@ client.once('ready', () => {
 
 client.on('interactionCreate', async interaction => {
   try {
-    if (interaction.isChatInputCommand()) {
-      const command = client.commands.get(interaction.commandName);
-      if (!command) return;
-      await command.execute(interaction);
-    }
-    else if (interaction.isButton()) {
+    if (interaction.isButton()) {
       const [action, managerId, teamName, signeeId] = interaction.customId.split('_');
 
       if (interaction.user.id !== signeeId) {
@@ -70,7 +65,6 @@ client.on('interactionCreate', async interaction => {
         return interaction.followUp({ content: "❌ You can't respond to someone else's contract!", ephemeral: true });
       }
 
-    
       await interaction.deferUpdate();
 
       const { managers } = require('./utils/managers');
@@ -91,29 +85,28 @@ client.on('interactionCreate', async interaction => {
           if (row) {
             return interaction.followUp({ content: `❌ You are already contracted to ${row.emoji} \`${row.teamName}\`.`, ephemeral: true });
           }
-          db.contractPlayer(member.id, teamName, teamData.emoji, (contractErr) => {
+          db.contractPlayer(member.id, teamName, teamData.emoji, async (contractErr) => {
             if (contractErr) {
               return interaction.followUp({ content: '⚠️ Error saving contract to database.', ephemeral: true });
             }
-            interaction.client.channels.fetch('1398678243040559214')
-              .then(signingChannel => {
-                signingChannel.send(`🔔 | <@${member.id}> has joined ${teamData.emoji} \`${teamData.team}\``);
-                return interaction.followUp({ content: `✅ Contract signed with ${teamData.emoji} \`${teamData.team}\`.`, ephemeral: true });
-              })
-              .catch(fetchErr => {
-                console.error('Error fetching signing channel:', fetchErr);
-                interaction.followUp({ content: '⚠️ Error sending message to signing channel.', ephemeral: true });
-              });
+            try {
+              const signingChannel = await interaction.client.channels.fetch('1398678243040559214');
+              signingChannel.send(`🔔 | <@${member.id}> has joined ${teamData.emoji} \`${teamData.team}\``);
+              return interaction.followUp({ content: `✅ Contract signed with ${teamData.emoji} \`${teamData.team}\`.`, ephemeral: true });
+            } catch (fetchErr) {
+              console.error('Error fetching signing channel:', fetchErr);
+              return interaction.followUp({ content: '⚠️ Error sending message to signing channel.', ephemeral: true });
+            }
           });
         });
-      }
-      else if (action === 'decline') {
-        await interaction.followUp({ content: `❌ | <@${member.id}> has declined the contract.`, ephemeral: true });
+      } else if (action === 'decline') {
+        return interaction.followUp({ content: `❌ | <@${member.id}> has declined the contract.`, ephemeral: true });
       }
     }
   } catch (err) {
     console.error('Error handling interaction:', err);
-    if (interaction.replied || interaction.deferred) {
+
+    if (interaction.deferred || interaction.replied) {
       await interaction.followUp({ content: '❌ There was an error processing this interaction.', ephemeral: true });
     } else {
       await interaction.reply({ content: '❌ There was an error processing this interaction.', ephemeral: true });
