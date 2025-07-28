@@ -19,16 +19,19 @@ const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
 const express = require('express');
 const app = express();
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 
 app.get('/', (req, res) => {
   res.send('Bot is online!');
 });
 
-app.listen(PORT, () => {
-  console.log(`Uptime server is running on port ${PORT}`);
+app.listen(port, () => {
+ 
+  const url = process.env.HOSTNAME
+    ? `https://${process.env.HOSTNAME}`
+    : `http://localhost:${port}`;
+  console.log(`Uptime server is running on ${url}`);
 });
-
 
 (async () => {
     try {
