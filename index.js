@@ -25,13 +25,10 @@ app.get('/', (req, res) => {
   res.send('Bot is online!');
 });
 
-app.listen(port, () => {
- 
-  const url = process.env.HOSTNAME
-    ? `https://${process.env.HOSTNAME}`
-    : `http://localhost:${port}`;
-  console.log(`Uptime server is running on ${url}`);
+app.listen(PORT, () => {
+  console.log(`Uptime server is running on port ${PORT}`);
 });
+
 
 (async () => {
     try {
