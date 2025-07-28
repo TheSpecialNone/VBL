@@ -16,9 +16,23 @@ for (const file of commandFiles) {
 
 const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
 
+const express = require('express');
+const app = express();
+
+const PORT = process.env.PORT || 3000;
+
+app.get('/', (req, res) => {
+  res.send('Bot is online!');
+});
+
+app.listen(PORT, () => {
+  console.log(`Uptime server is running on port ${PORT}`);
+});
+
+
 (async () => {
     try {
-        console.log('Refreshing commands...');
+        console.log('Refreshing commands....');
         await rest.put(
             Routes.applicationCommands(process.env.CLIENT_ID),
             { body: commands },
