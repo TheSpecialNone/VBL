@@ -87,7 +87,7 @@ module.exports = {
           '`/contract @user` - Send contracts to players *(Managers Only)*\n' +
           '`/scout [position] [message]` - Scout for players *(Managers Only)*\n' +
           '`/release @user` - Release players from team *(Managers Only)*\n' +
-          '`/forcerelease @user` - Force release players *(Staff Only)*',
+          '`/forcerelease @user` - Force release players *(Director+)*',
         inline: false
       });
     }

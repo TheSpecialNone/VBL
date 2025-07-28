@@ -30,7 +30,7 @@ app.listen(PORT, () => {
   console.log(`Uptime server is running on port ${PORT}`);
 });
 
-// Connect to MongoDB with Mongoose
+
 mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
