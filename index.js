@@ -51,54 +51,118 @@ client.on('interactionCreate', async interaction => {
       if (!command) return;
       await command.execute(interaction);
     }
-        else if (interaction.isButton()) {
-          const [action, managerId, teamName, signeeId] = interaction.customId.split('_');
-          if (interaction.user.id !== signeeId) {
-            return interaction.reply({ content: "❌ You can't respond to someone else's contract!", ephemeral: true });
-          }
-          const { managers } = require('./utils/managers');
-          const db = require('./db/database');
-          if (!managers[managerId]) {
-            return interaction.update({ content: '❌ Invalid manager data.', components: [], embeds: [] });
-          }
-          const teamData = managers[managerId];
-          const member = interaction.user;
-          if (action === 'accept') {
-            db.getContractedTeam(member.id, async (err, row) => {
-              if (err) {
-                return interaction.update({ content: '⚠️ Database error.', components: [], embeds: [] });
-              }
-              if (row) {
-                return interaction.update({ content: `❌ You are already contracted to ${row.emoji} \`${row.teamName}\`.`, components: [], embeds: [] });
-              }
-              db.contractPlayer(member.id, teamName, teamData.emoji, (contractErr) => {
-                if (contractErr) {
-                  return interaction.update({ content: '⚠️ Error saving contract to database.', components: [], embeds: [] });
-                }
-                interaction.client.channels.fetch('1398678243040559214')
-                  .then(signingChannel => {
-                    signingChannel.send(`🔔 | <@${member.id}> has joined ${teamData.emoji} \`${teamData.team}\``);
-                    return interaction.update({ content: `✅ Contract signed with ${teamData.emoji} \`${teamData.team}\`.`, components: [], embeds: [] });
-                  })
-                  .catch(fetchErr => {
-                    console.error('Error fetching signing channel:', fetchErr);
-                    interaction.update({ content: '⚠️ Error sending message to signing channel.', components: [], embeds: [] });
-                  });
-              });
-            });
-          }
-          else if (action === 'decline') {
-            await interaction.update({ content: `❌ | <@${member.id}> has declined the contract.`, components: [], embeds: [] });
-          }
+
+    else if (interaction.isButton()) {
+      const [action, managerId, teamName, signeeId] = interaction.customId.split('_');
+
+      if (interaction.user.id !== signeeId) {
+        if (!interaction.replied && !interaction.deferred) {
+          return interaction.reply({
+            content: "❌ You can't respond to someone else's contract!",
+            ephemeral: true
+          });
         }
+        return;
+      }
+
+      const { managers } = require('./utils/managers');
+      const db = require('./db/database');
+
+      if (!managers[managerId]) {
+        if (!interaction.replied && !interaction.deferred) {
+          return interaction.update({
+            content: '❌ Invalid manager data.',
+            components: [],
+            embeds: []
+          });
+        }
+        return;
+      }
+
+      const teamData = managers[managerId];
+      const member = interaction.user;
+
+      if (action === 'accept') {
+        db.getContractedTeam(member.id, async (err, row) => {
+          if (err) {
+            if (!interaction.replied && !interaction.deferred) {
+              return interaction.update({
+                content: '⚠️ Database error.',
+                components: [],
+                embeds: []
+              });
+            }
+            return;
+          }
+
+          if (row) {
+            if (!interaction.replied && !interaction.deferred) {
+              return interaction.update({
+                content: `❌ You are already contracted to ${row.emoji} \`${row.teamName}\`.`,
+                components: [],
+                embeds: []
+              });
+            }
+            return;
+          }
+
+          db.contractPlayer(member.id, teamName, teamData.emoji, async (contractErr) => {
+            if (contractErr) {
+              if (!interaction.replied && !interaction.deferred) {
+                return interaction.update({
+                  content: '⚠️ Error saving contract to database.',
+                  components: [],
+                  embeds: []
+                });
+              }
+              return;
+            }
+
+            try {
+              const signingChannel = await interaction.client.channels.fetch('1398678243040559214');
+              await signingChannel.send(`🔔 | <@${member.id}> has joined ${teamData.emoji} \`${teamData.team}\``);
+
+              if (!interaction.replied && !interaction.deferred) {
+                await interaction.update({
+                  content: `✅ Contract signed with ${teamData.emoji} \`${teamData.team}\`.`,
+                  components: [],
+                  embeds: []
+                });
+              }
+            } catch (fetchErr) {
+              console.error('Error fetching signing channel:', fetchErr);
+              if (!interaction.replied && !interaction.deferred) {
+                await interaction.update({
+                  content: '⚠️ Error sending message to signing channel.',
+                  components: [],
+                  embeds: []
+                });
+              }
+            }
+          });
+        });
+      }
+
+      else if (action === 'decline') {
+        if (!interaction.replied && !interaction.deferred) {
+          await interaction.update({
+            content: `❌ | <@${interaction.user.id}> has declined the contract.`,
+            components: [],
+            embeds: []
+          });
+        }
+      }
+    }
   } catch (err) {
     console.error('Error handling interaction:', err);
-    if (interaction.replied || interaction.deferred) {
-      await interaction.followUp({ content: '❌ There was an error processing this interaction.', ephemeral: true });
-    } else {
-      await interaction.reply({ content: '❌ There was an error processing this interaction.', ephemeral: true });
+    if (!interaction.replied && !interaction.deferred) {
+      await interaction.reply({
+        content: '❌ There was an error processing this interaction.',
+        ephemeral: true
+      });
     }
   }
 });
+
 
 client.login(process.env.TOKEN);
