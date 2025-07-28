@@ -1,31 +1,24 @@
-const admin = require('firebase-admin');
-const fs = require('fs');
+const sqlite3 = require('sqlite3').verbose();
+const db = new sqlite3.Database('./db/contracts.db');
 
-if (process.env.FIREBASE_KEY_B64) {
-  const buffer = Buffer.from(process.env.FIREBASE_KEY_B64, 'base64');
-  fs.writeFileSync('firebase-key.json', buffer);
-}
-
-const serviceAccount = require('../firebase-key.json'); 
-
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
-});
-
-const db = admin.firestore();
-const contracts = db.collection('contracts');
+db.run(`CREATE TABLE IF NOT EXISTS contracts (
+  userId TEXT PRIMARY KEY,
+  teamName TEXT,
+  emoji TEXT
+)`);
 
 module.exports = {
-  getContractedTeam: async (userId) => {
-    const doc = await contracts.doc(userId).get();
-    return doc.exists ? doc.data() : null;
+  getContractedTeam: (userId, callback) => {
+    db.get('SELECT teamName, emoji FROM contracts WHERE userId = ?', [userId], (err, row) => {
+      callback(err, row);
+    });
   },
 
-  contractPlayer: async (userId, teamName, emoji) => {
-    await contracts.doc(userId).set({ teamName, emoji });
+  contractPlayer: (userId, teamName, emoji, callback) => {
+    db.run('INSERT INTO contracts (userId, teamName, emoji) VALUES (?, ?, ?)', [userId, teamName, emoji], callback);
   },
 
-  releasePlayer: async (userId) => {
-    await contracts.doc(userId).delete();
+  releasePlayer: (userId, callback) => {
+    db.run('DELETE FROM contracts WHERE userId = ?', [userId], callback);
   }
 };

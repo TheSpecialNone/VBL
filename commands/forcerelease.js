@@ -5,7 +5,7 @@ const db = require('../db/database');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('forcerelease')
-    .setDescription('Force release a player from their team (Director+)')
+    .setDescription('Force release a player from their team (Admin Only)')
     .addUserOption(option => option.setName('releasee').setDescription('User to force release').setRequired(true))
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 
@@ -29,22 +29,21 @@ module.exports = {
       return interaction.reply({ content: '❌ You cannot force release bots.', ephemeral: true });
     }
 
-    try {
-      const row = await db.getContractedTeam(releasee.id);
+    db.getContractedTeam(releasee.id, async (err, row) => {
+      if (err) {
+        return interaction.reply({ content: '⚠️ Database error.', ephemeral: true });
+      }
+
       if (!row) {
         return interaction.reply({ content: `❌ <@${releasee.id}> is not contracted to any team.`, ephemeral: true });
       }
 
-      await db.releasePlayer(releasee.id);
 
-      const releaseChannel = await interaction.client.channels.fetch('1398678255518613696');
-      releaseChannel.send(`⚡ | **<@${releasee.id}>** has been **FORCE RELEASED** from ${row.emoji} \`${row.teamName}\` by <@${sender}>`);
-
-      return interaction.reply({ content: `✅ <@${releasee.id}> force released from ${row.emoji} \`${row.teamName}\`.`, ephemeral: true });
-
-    } catch (error) {
-      console.error('Database error in forcerelease:', error);
-      return interaction.reply({ content: '⚠️ Database error.', ephemeral: true });
-    }
+      db.releasePlayer(releasee.id, async () => {
+        const releaseChannel = await interaction.client.channels.fetch('1398678255518613696');
+        releaseChannel.send(`⚡ | **<@${releasee.id}>** has been **FORCE RELEASED** from ${row.emoji} \`${row.teamName}\` by <@${sender}>`);
+        await interaction.reply({ content: `✅ <@${releasee.id}> force released from ${row.emoji} \`${row.teamName}\`.`, ephemeral: true });
+      });
+    });
   }
 };
