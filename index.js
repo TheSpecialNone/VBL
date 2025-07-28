@@ -38,7 +38,7 @@ mongoose.connect(process.env.MONGODB_URI, {
 .then(() => console.log('✅ Connected to MongoDB'))
 .catch(err => {
   console.error('❌ MongoDB connection error:', err);
-  process.exit(1); // Exit if DB connection fails
+  process.exit(1); 
 });
 
 (async () => {
@@ -60,7 +60,7 @@ client.once('ready', () => {
   client.user.setPresence({
     status: 'dnd',
     activities: [{
-      name: '/help for commands',
+      name: '/help',
       type: ActivityType.Listening
     }]
   });
@@ -68,7 +68,7 @@ client.once('ready', () => {
   console.log('Bot status set to DND with /help activity');
 });
 
-// Import the new mongoose-based database module
+
 const db = require('./db/database');
 const { managers } = require('./utils/managers');
 
