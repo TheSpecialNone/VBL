@@ -46,11 +46,11 @@ module.exports = {
     const position = interaction.options.getString('position');
     const region = interaction.options.getString('region');
 
-    if (managers.managers[userId]) {
+    if (managers[userId]) {
       return interaction.reply({ content: '❌ Managers cannot register as free agents.', ephemeral: true });
     }
 
-    const cooldownAmount = 24 * 60 * 60 * 1000;
+    const cooldownAmount = 24 * 60 * 60 * 1000; // 24 hours in ms
     const now = Date.now();
 
     if (cooldowns.has(userId)) {
@@ -77,7 +77,6 @@ module.exports = {
         });
       }
 
-     
       cooldowns.set(userId, now);
       setTimeout(() => cooldowns.delete(userId), cooldownAmount);
 

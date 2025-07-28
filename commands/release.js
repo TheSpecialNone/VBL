@@ -10,41 +10,46 @@ module.exports = {
 
   async execute(interaction) {
     const releasee = interaction.options.getUser('releasee');
-    const sender = interaction.user.id;
+    const senderId = interaction.user.id;
 
-    if (!managers[sender]) 
+    if (!managers[senderId]) {
       return interaction.reply({ content: '❌ You are not an authorized manager.', ephemeral: true });
+    }
 
-    if (managers[releasee.id]) 
+    if (managers[releasee.id]) {
       return interaction.reply({ content: '❌ You cannot release another manager.', ephemeral: true });
+    }
 
-    if (releasee.id === sender) 
+    if (releasee.id === senderId) {
       return interaction.reply({ content: '❌ You cannot release yourself.', ephemeral: true });
+    }
 
-    if (releasee.bot) 
+    if (releasee.bot) {
       return interaction.reply({ content: '❌ You cannot release bots.', ephemeral: true });
+    }
 
-    const senderTeam = managers[sender].team;
+    const senderTeam = managers[senderId].team;
 
-    db.getContractedTeam(releasee.id, async (err, row) => {
-      if (err) {
-        return interaction.reply({ content: '⚠️ Database error.', ephemeral: true });
-      }
+    try {
+      const contract = await db.getContractedTeam(releasee.id);
 
-      if (!row) {
+      if (!contract) {
         return interaction.reply({ content: `❌ <@${releasee.id}> is not contracted to any team.`, ephemeral: true });
       }
 
-      if (row.teamName !== senderTeam) {
+      if (contract.teamName !== senderTeam) {
         return interaction.reply({ content: `❌ You can only release players contracted to your own team (${senderTeam}).`, ephemeral: true });
       }
 
-      db.releasePlayer(releasee.id, async () => {
-        const releaseChannel = await interaction.client.channels.fetch('1398678255518613696');
-        releaseChannel.send(`🔔 | **<@${releasee.id}>** has been released from ${row.emoji} \`${row.teamName}\``);
+      await db.releasePlayer(releasee.id);
 
-        await interaction.reply({ content: `✅ <@${releasee.id}> released from ${row.emoji} \`${row.teamName}\`.`, ephemeral: true });
-      });
-    });
+      const releaseChannel = await interaction.client.channels.fetch('1398678255518613696');
+      await releaseChannel.send(`🔔 | **<@${releasee.id}>** has been released from ${contract.emoji} \`${contract.teamName}\``);
+
+      await interaction.reply({ content: `✅ <@${releasee.id}> released from ${contract.emoji} \`${contract.teamName}\`.`, ephemeral: true });
+    } catch (error) {
+      console.error('Release command error:', error);
+      return interaction.reply({ content: '⚠️ Something went wrong. Please try again later.', ephemeral: true });
+    }
   }
 };

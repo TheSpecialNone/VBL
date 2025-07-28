@@ -1,24 +1,42 @@
-const sqlite3 = require('sqlite3').verbose();
-const db = new sqlite3.Database('./db/contracts.db');
+const mongoose = require('mongoose');
 
-db.run(`CREATE TABLE IF NOT EXISTS contracts (
-  userId TEXT PRIMARY KEY,
-  teamName TEXT,
-  emoji TEXT
-)`);
+mongoose.connect(process.env.MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
+
+const contractSchema = new mongoose.Schema({
+  userId: { type: String, required: true, unique: true },
+  teamName: { type: String, required: true },
+  emoji: { type: String, required: true }
+});
+
+const Contract = mongoose.model('Contract', contractSchema);
 
 module.exports = {
-  getContractedTeam: (userId, callback) => {
-    db.get('SELECT teamName, emoji FROM contracts WHERE userId = ?', [userId], (err, row) => {
-      callback(err, row);
-    });
+  getContractedTeam: async (userId) => {
+    try {
+      return await Contract.findOne({ userId }).exec();
+    } catch (err) {
+      throw err;
+    }
   },
 
-  contractPlayer: (userId, teamName, emoji, callback) => {
-    db.run('INSERT INTO contracts (userId, teamName, emoji) VALUES (?, ?, ?)', [userId, teamName, emoji], callback);
+  contractPlayer: async (userId, teamName, emoji) => {
+    try {
+      const newContract = new Contract({ userId, teamName, emoji });
+      await newContract.save();
+      return newContract;
+    } catch (err) {
+      throw err;
+    }
   },
 
-  releasePlayer: (userId, callback) => {
-    db.run('DELETE FROM contracts WHERE userId = ?', [userId], callback);
+  releasePlayer: async (userId) => {
+    try {
+      return await Contract.deleteOne({ userId });
+    } catch (err) {
+      throw err;
+    }
   }
 };
