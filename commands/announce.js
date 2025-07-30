@@ -39,7 +39,7 @@ module.exports = {
       .setCustomId('announcementInput')
       .setLabel('Paste your full announcement')
       .setStyle(TextInputStyle.Paragraph)
-      .setMaxLength(4096)
+      .setMaxLength(4000)
       .setRequired(true);
 
     const row = new ActionRowBuilder().addComponents(messageInput);
