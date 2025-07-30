@@ -101,7 +101,7 @@ client.on('interactionCreate', async interaction => {
           
           await db.contractPlayer(member.id, teamName, teamData.emoji);
           
-          const signingChannel = await interaction.client.channels.fetch('1398678243040559214');
+          const signingChannel = await interaction.client.channels.fetch('1400085329377099846');
           signingChannel.send(`🔔 | <@${member.id}> has joined ${teamData.emoji} \`${teamData.team}\``);
           
           return interaction.update({ content: `✅ Contract signed with ${teamData.emoji} \`${teamData.team}\`.`, components: [], embeds: [] });

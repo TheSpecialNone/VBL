@@ -87,7 +87,7 @@ module.exports = {
       .setColor(0x00ff00)
       .setTimestamp();
 
-    const targetChannel = interaction.client.channels.cache.get('1398756680526729276');
+    const targetChannel = interaction.client.channels.cache.get('1400084855236198400');
     if (targetChannel) {
       await targetChannel.send({ embeds: [embed] });
       await interaction.reply({ content: '✅ Your scouting message has been posted!', ephemeral: true });

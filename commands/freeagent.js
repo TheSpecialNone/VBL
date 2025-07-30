@@ -96,7 +96,7 @@ module.exports = {
         .setColor(0xffa500)
         .setTimestamp();
 
-      const targetChannel = interaction.client.channels.cache.get('1398754075348303902');
+      const targetChannel = interaction.client.channels.cache.get('1400084865591804045');
 
       if (!targetChannel) {
         return interaction.reply({

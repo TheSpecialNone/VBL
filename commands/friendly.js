@@ -1,10 +1,10 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const managersDB = require('../utils/managers.js');
 
-const MANAGER_ROLE_ID = '1398685123062268144';
-const ASSISTANT_ROLE_ID = '1398685149247311963';
-const FRIENDLY_ROLE_ID = '1398685167488340150';
-const FRIENDLY_CHANNEL_ID = '1398685020717056123';
+const MANAGER_ROLE_ID = '1335618302726373397';
+const ASSISTANT_ROLE_ID = '1335618236716285984';
+const FRIENDLY_ROLE_ID = '1339320152335847546';
+const FRIENDLY_CHANNEL_ID = '1400084874437726309';
 
 const regions = ['GMT', 'BST', 'EST', 'CST', 'PST', 'OTHER'];
 const types = ['DM TO PLAY', 'IN GAME ALREADY'];
