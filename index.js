@@ -13,10 +13,7 @@ const {
   ActionRowBuilder
 } = require('discord.js');
 
-const emojiMap = {
-  ':VBL:': '<:VBL:1234567890123456478>',
-  
-};
+const emojiMap = {};
 
 
 require('dotenv').config();
