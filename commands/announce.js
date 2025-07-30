@@ -34,7 +34,7 @@ module.exports = {
 
     const embed = new EmbedBuilder()
       .setColor('#f2f2f2')
-      .setDescription(message)
+      .setDescription(`${message}`)
       .setTimestamp()
       .setFooter({
         text: user.username,
