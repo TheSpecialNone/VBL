@@ -157,10 +157,11 @@ client.on(Events.InteractionCreate, async interaction => {
     .setColor('#f2f2f2')
     .setDescription(message)
     .setTimestamp()
-    .setFooter({
-      text: user.username,
-      iconURL: user.displayAvatarURL({ extension: 'png', size: 64 })
-    });
+   .setFooter({
+  text: member.displayName,
+  iconURL: member.displayAvatarURL({ extension: 'png', size: 64 })
+});
+
 
   try {
     const announceChannel = await interaction.client.channels.fetch(ANNOUNCE_CHANNEL_ID);
