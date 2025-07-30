@@ -18,7 +18,7 @@ module.exports = {
     const user = interaction.user;
 
     const embed = new EmbedBuilder()
-      .setColor('#f2f2f2') 
+      .setColor('#f2f2f2') // test
       .setDescription(message)
       .setTimestamp()
       .setFooter({
