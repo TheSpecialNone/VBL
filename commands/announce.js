@@ -9,7 +9,7 @@ const {
   Events
 } = require('discord.js');
 
-const ANNOUNCE_CHANNEL_ID = '1400122725317607586';
+const ANNOUNCE_CHANNEL_ID = '1335624758842101853';
 const MINIMUM_ROLE_ID = '1335618455251980330';
 
 module.exports = {
