@@ -13,6 +13,29 @@ const {
   ActionRowBuilder
 } = require('discord.js');
 
+const emojiMap = {
+  ':VBL:': '<:VBL:123456789012345678>',
+  ':EPL:': '<:EPL:1400204140621070336>',
+  ':LALIGA:': '<:LALIGA:1400203642916569168>',
+  
+  // Premier League Clubs
+  ':ARS:': '<:ARS:1400202180081877073>',
+  ':CHE:': '<:CHE:1400202177682604294>',
+  ':LIV:': '<:LIV:1400202174935470101>',
+  ':MCI:': '<:MCI:1400202173203349514>',
+  ':MUN:': '<:MUN:1400202169595986031>',
+  ':TOT:': '<:TOT:1400202166920151180>',
+
+  // La Liga Clubs
+  ':ATH:': '<:ATH:1400202577274212402>',
+  ':ATM:': '<:ATM:1400202574971408544>',
+  ':FCB:': '<:FCB:1400202571670487254>',
+  ':RMA:': '<:RMA:1400202568742998067>',
+  ':RSO:': '<:RSO:1400202565379166269>',
+  ':SEV:': '<:SEV:1400202562543681707>',
+};
+
+
 require('dotenv').config();
 const fs = require('fs');
 const mongoose = require('mongoose');
@@ -133,36 +156,41 @@ client.on(Events.InteractionCreate, async interaction => {
     }
 
 
-    else if (interaction.isModalSubmit() && interaction.customId === 'announceModal') {
-      const member = interaction.member;
-      const user = interaction.user;
-      const guild = interaction.guild;
+   else if (interaction.isModalSubmit() && interaction.customId === 'announceModal') {
+  const member = interaction.member;
+  const user = interaction.user;
+  const guild = interaction.guild;
 
-      const requiredRole = guild.roles.cache.get(MINIMUM_ROLE_ID);
-      if (!requiredRole || member.roles.highest.comparePositionTo(requiredRole) < 0) {
-        return interaction.reply({ content: '🚫 You do not have permission.', ephemeral: true });
-      }
+  const requiredRole = guild.roles.cache.get(MINIMUM_ROLE_ID);
+  if (!requiredRole || member.roles.highest.comparePositionTo(requiredRole) < 0) {
+    return interaction.reply({ content: '🚫 You do not have permission.', ephemeral: true });
+  }
 
-      const message = interaction.fields.getTextInputValue('announcementInput');
+  let message = interaction.fields.getTextInputValue('announcementInput');
 
-      const embed = new EmbedBuilder()
-        .setColor('#f2f2f2')
-        .setDescription(message)
-        .setTimestamp()
-        .setFooter({
-          text: user.username,
-          iconURL: user.displayAvatarURL({ extension: 'png', size: 64 })
-        });
 
-      try {
-        const announceChannel = await interaction.client.channels.fetch(ANNOUNCE_CHANNEL_ID);
-        await announceChannel.send({ content: '@everyone', embeds: [embed] });
-        await interaction.reply({ content: '✅ Announcement sent!', ephemeral: true });
-      } catch (error) {
-        console.error('Error sending announcement:', error);
-        await interaction.reply({ content: '⚠️ Failed to send the announcement.', ephemeral: true });
-      }
-    }
+  for (const [shortcut, emoji] of Object.entries(emojiMap)) {
+    message = message.replaceAll(shortcut, emoji);
+  }
+
+  const embed = new EmbedBuilder()
+    .setColor('#f2f2f2')
+    .setDescription(message)
+    .setTimestamp()
+    .setFooter({
+      text: user.username,
+      iconURL: user.displayAvatarURL({ extension: 'png', size: 64 })
+    });
+
+  try {
+    const announceChannel = await interaction.client.channels.fetch(ANNOUNCE_CHANNEL_ID);
+    await announceChannel.send({ content: '@everyone', embeds: [embed] });
+    await interaction.reply({ content: '✅ Announcement sent!', ephemeral: true });
+  } catch (error) {
+    console.error('Error sending announcement:', error);
+    await interaction.reply({ content: '⚠️ Failed to send the announcement.', ephemeral: true });
+  }
+}
   } catch (err) {
     console.error('Error handling interaction:', err);
     if (interaction.replied || interaction.deferred) {
