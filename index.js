@@ -124,4 +124,39 @@ client.on('interactionCreate', async interaction => {
   }
 });
 
+client.on(Events.InteractionCreate, async interaction => {
+  if (!interaction.isModalSubmit()) return;
+  if (interaction.customId !== 'announceModal') return;
+
+  const member = interaction.member;
+  const user = interaction.user;
+  const guild = interaction.guild;
+
+  const requiredRole = guild.roles.cache.get(MINIMUM_ROLE_ID);
+  if (!requiredRole || member.roles.highest.comparePositionTo(requiredRole) < 0) {
+    return interaction.reply({ content: '🚫 You do not have permission.', ephemeral: true });
+  }
+
+  const message = interaction.fields.getTextInputValue('announcementInput');
+
+  const embed = new EmbedBuilder()
+    .setColor('#f2f2f2')
+    .setDescription(message)
+    .setTimestamp()
+    .setFooter({
+      text: user.username,
+      iconURL: user.displayAvatarURL({ extension: 'png', size: 64 })
+    });
+
+  try {
+    const announceChannel = await interaction.client.channels.fetch(ANNOUNCE_CHANNEL_ID);
+    await announceChannel.send({ content: '@everyone', embeds: [embed] });
+    await interaction.reply({ content: '✅ Announcement sent!', ephemeral: true });
+  } catch (error) {
+    console.error('Error sending announcement:', error);
+    await interaction.reply({ content: '⚠️ Failed to send the announcement.', ephemeral: true });
+  }
+});
+
+
 client.login(process.env.TOKEN);
