@@ -1,7 +1,26 @@
-const { Client, Collection, GatewayIntentBits, REST, Routes, ActivityType } = require('discord.js');
+const {
+  Client,
+  Collection,
+  GatewayIntentBits,
+  REST,
+  Routes,
+  ActivityType,
+  Events,
+  EmbedBuilder,
+  ModalBuilder,
+  TextInputBuilder,
+  TextInputStyle,
+  ActionRowBuilder
+} = require('discord.js');
+
 require('dotenv').config();
 const fs = require('fs');
 const mongoose = require('mongoose');
+const express = require('express');
+
+
+const ANNOUNCE_CHANNEL_ID = '1400122725317607586';
+const MINIMUM_ROLE_ID = '1335618455251980330';
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 client.commands = new Collection();
@@ -17,19 +36,11 @@ for (const file of commandFiles) {
 
 const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
 
-const express = require('express');
+
 const app = express();
-
 const PORT = process.env.PORT || 8080;
-
-app.get('/', (req, res) => {
-  res.send('Bot is online!');
-});
-
-app.listen(PORT, () => {
-  console.log(`Uptime server is running on port ${PORT}`);
-});
-
+app.get('/', (req, res) => res.send('Bot is online!'));
+app.listen(PORT, () => console.log(`Uptime server is running on port ${PORT}`));
 
 mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
@@ -38,8 +49,9 @@ mongoose.connect(process.env.MONGODB_URI, {
 .then(() => console.log('✅ Connected to MongoDB'))
 .catch(err => {
   console.error('❌ MongoDB connection error:', err);
-  process.exit(1); 
+  process.exit(1);
 });
+
 
 (async () => {
   try {
@@ -54,9 +66,9 @@ mongoose.connect(process.env.MONGODB_URI, {
   }
 })();
 
+// Bot ready
 client.once('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
-
   client.user.setPresence({
     status: 'dnd',
     activities: [{
@@ -64,7 +76,6 @@ client.once('ready', () => {
       type: ActivityType.Listening
     }]
   });
-
   console.log('Bot status set to DND with /help activity');
 });
 
@@ -72,46 +83,84 @@ client.once('ready', () => {
 const db = require('./db/database');
 const { managers } = require('./utils/managers');
 
-client.on('interactionCreate', async interaction => {
+
+client.on(Events.InteractionCreate, async interaction => {
   try {
+    // Slash Command
     if (interaction.isChatInputCommand()) {
       const command = client.commands.get(interaction.commandName);
       if (!command) return;
       await command.execute(interaction);
-    } else if (interaction.isButton()) {
+    }
+
+ 
+    else if (interaction.isButton()) {
       const [action, managerId, teamName, signeeId] = interaction.customId.split('_');
-      
       if (interaction.user.id !== signeeId) {
         return interaction.reply({ content: "❌ You can't respond to someone else's contract!", ephemeral: true });
       }
-      
+
       if (!managers[managerId]) {
         return interaction.update({ content: '❌ Invalid manager data.', components: [], embeds: [] });
       }
-      
+
       const teamData = managers[managerId];
       const member = interaction.user;
-      
+
       if (action === 'accept') {
         try {
           const row = await db.getContractedTeam(member.id);
           if (row) {
             return interaction.update({ content: `❌ You are already contracted to ${row.emoji} \`${row.teamName}\`.`, components: [], embeds: [] });
           }
-          
+
           await db.contractPlayer(member.id, teamName, teamData.emoji);
-          
+
           const signingChannel = await interaction.client.channels.fetch('1400085329377099846');
           signingChannel.send(`🔔 | <@${member.id}> has joined ${teamData.emoji} \`${teamData.team}\``);
-          
+
           return interaction.update({ content: `✅ Contract signed with ${teamData.emoji} \`${teamData.team}\`.`, components: [], embeds: [] });
-          
+
         } catch (error) {
           console.error('Database error:', error);
           return interaction.update({ content: '⚠️ Database error.', components: [], embeds: [] });
         }
-      } else if (action === 'decline') {
-        await interaction.update({ content: `❌ | <@${member.id}> has declined the contract.`, components: [], embeds: [] });
+      }
+
+      if (action === 'decline') {
+        return interaction.update({ content: `❌ | <@${member.id}> has declined the contract.`, components: [], embeds: [] });
+      }
+    }
+
+
+    else if (interaction.isModalSubmit() && interaction.customId === 'announceModal') {
+      const member = interaction.member;
+      const user = interaction.user;
+      const guild = interaction.guild;
+
+      const requiredRole = guild.roles.cache.get(MINIMUM_ROLE_ID);
+      if (!requiredRole || member.roles.highest.comparePositionTo(requiredRole) < 0) {
+        return interaction.reply({ content: '🚫 You do not have permission.', ephemeral: true });
+      }
+
+      const message = interaction.fields.getTextInputValue('announcementInput');
+
+      const embed = new EmbedBuilder()
+        .setColor('#f2f2f2')
+        .setDescription(message)
+        .setTimestamp()
+        .setFooter({
+          text: user.username,
+          iconURL: user.displayAvatarURL({ extension: 'png', size: 64 })
+        });
+
+      try {
+        const announceChannel = await interaction.client.channels.fetch(ANNOUNCE_CHANNEL_ID);
+        await announceChannel.send({ content: '@everyone', embeds: [embed] });
+        await interaction.reply({ content: '✅ Announcement sent!', ephemeral: true });
+      } catch (error) {
+        console.error('Error sending announcement:', error);
+        await interaction.reply({ content: '⚠️ Failed to send the announcement.', ephemeral: true });
       }
     }
   } catch (err) {
@@ -121,40 +170,6 @@ client.on('interactionCreate', async interaction => {
     } else {
       await interaction.reply({ content: '❌ There was an error processing this interaction.', ephemeral: true });
     }
-  }
-});
-
-client.on(Events.InteractionCreate, async interaction => {
-  if (!interaction.isModalSubmit()) return;
-  if (interaction.customId !== 'announceModal') return;
-
-  const member = interaction.member;
-  const user = interaction.user;
-  const guild = interaction.guild;
-
-  const requiredRole = guild.roles.cache.get(MINIMUM_ROLE_ID);
-  if (!requiredRole || member.roles.highest.comparePositionTo(requiredRole) < 0) {
-    return interaction.reply({ content: '🚫 You do not have permission.', ephemeral: true });
-  }
-
-  const message = interaction.fields.getTextInputValue('announcementInput');
-
-  const embed = new EmbedBuilder()
-    .setColor('#f2f2f2')
-    .setDescription(message)
-    .setTimestamp()
-    .setFooter({
-      text: user.username,
-      iconURL: user.displayAvatarURL({ extension: 'png', size: 64 })
-    });
-
-  try {
-    const announceChannel = await interaction.client.channels.fetch(ANNOUNCE_CHANNEL_ID);
-    await announceChannel.send({ content: '@everyone', embeds: [embed] });
-    await interaction.reply({ content: '✅ Announcement sent!', ephemeral: true });
-  } catch (error) {
-    console.error('Error sending announcement:', error);
-    await interaction.reply({ content: '⚠️ Failed to send the announcement.', ephemeral: true });
   }
 });
 
