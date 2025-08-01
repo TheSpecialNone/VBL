@@ -38,5 +38,17 @@ module.exports = {
     } catch (err) {
       throw err;
     }
+  },
+
+  getPlayersByTeam: async (teamName) => {
+  try {
+    return await Contract.find({ teamName }).exec();
+  } catch (err) {
+    throw err;
   }
+}
+
+  
 };
+
+
