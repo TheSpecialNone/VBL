@@ -42,12 +42,12 @@ module.exports = {
       emoji: '<:ATH:1400202577274212402>'
     },
     '225661506040102913': {
-      team: 'Atletico Madrid',
-      emoji: '<:ATM:1400202574971408544>'
+      team: 'Sevilla',
+      emoji: '<:SEV:1400889809169289339>'
     },
     '537783462481100821': {
-      team: 'Atletico Madrid',
-      emoji: '<:ATM:1400202574971408544>'
+      team: 'Sevilla',
+      emoji: '<:SEV:1400889809169289339>'
     },
     '650825435696988180': {
       team: 'FC Barcelona',
