@@ -68,12 +68,12 @@ module.exports = {
     },
 
    
-    /*
-    'REAL_SOCIEDAD_MANAGER_ID': {
+    
+    '1252801012822048820': {
       team: 'Real Sociedad',
       emoji: '<:RSO:1400889695533273209>'
     },
     
-    */
+    
   }
 };
