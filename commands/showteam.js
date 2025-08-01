@@ -5,7 +5,7 @@ const {
 const db = require('../db/database');
 const { managers } = require('../utils/managers');
 
-// Get all unique team names (max 25 choices for Discord)
+
 const allTeams = [...new Set(Object.values(managers).map(m => m.team))].slice(0, 25);
 
 module.exports = {
@@ -23,7 +23,7 @@ module.exports = {
     const selectedTeam = interaction.options.getString('team');
     const guild = interaction.guild;
 
-    await interaction.deferReply({ ephemeral: true }); // avoid timeout
+    await interaction.deferReply({ ephemeral: true }); 
 
     // Find all staff for selected team
     const staff = Object.entries(managers)
@@ -38,11 +38,11 @@ module.exports = {
     for (const person of staff) {
       try {
         const member = await guild.members.fetch(person.id);
-        if (member.roles.cache.some(role => role.name.toLowerCase() === 'manager')) {
-          staffDisplay.managers.push(`<@${person.id}>`);
-        } else if (member.roles.cache.some(role => role.name.toLowerCase() === 'assistant')) {
-          staffDisplay.assistants.push(`<@${person.id}>`);
-        }
+       if (member.roles.cache.some(role => role.name === 'VBL | Manager')) {
+  staffDisplay.managers.push(`<@${person.id}>`);
+} else if (member.roles.cache.some(role => role.name === 'VBL | Assistant Manager')) {
+  staffDisplay.assistants.push(`<@${person.id}>`);
+}
       } catch (e) {
         continue;
       }
