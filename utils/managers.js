@@ -1,5 +1,5 @@
 module.exports = {
-  enabled: false,
+  enabled: true,
   managers: {
     '650271397762957322': {
       team: 'Arsenal',
