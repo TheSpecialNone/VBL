@@ -25,9 +25,7 @@ module.exports = {
       return interaction.reply({ content: '❌ You cannot force release another manager.', ephemeral: true });
     }
 
-    if (releasee.id === sender) {
-      return interaction.reply({ content: '❌ You cannot force release yourself.', ephemeral: true });
-    }
+   
 
     if (releasee.bot) {
       return interaction.reply({ content: '❌ You cannot force release bots.', ephemeral: true });
