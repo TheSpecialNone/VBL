@@ -5,8 +5,8 @@ const {
 const db = require('../db/database');
 const { managers } = require('../utils/managers');
 
-
-const allTeams = [...new Set(Object.values(managers).map(m => m.team))];
+// Get all unique team names (max 25 choices for Discord)
+const allTeams = [...new Set(Object.values(managers).map(m => m.team))].slice(0, 25);
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -23,15 +23,16 @@ module.exports = {
     const selectedTeam = interaction.options.getString('team');
     const guild = interaction.guild;
 
+    await interaction.deferReply({ ephemeral: true }); // avoid timeout
 
+    // Find all staff for selected team
     const staff = Object.entries(managers)
       .filter(([, value]) => value.team === selectedTeam)
       .map(([id, value]) => ({ id, emoji: value.emoji }));
 
-
     const staffDisplay = {
       managers: [],
-      assistants: []
+      assistants: [],
     };
 
     for (const person of staff) {
@@ -43,11 +44,11 @@ module.exports = {
           staffDisplay.assistants.push(`<@${person.id}>`);
         }
       } catch (e) {
-        continue; 
+        continue;
       }
     }
 
-
+ 
     const players = await db.getPlayersByTeam(selectedTeam);
 
     const embed = new EmbedBuilder()
@@ -56,10 +57,16 @@ module.exports = {
       .addFields(
         { name: '👔 Manager(s)', value: staffDisplay.managers.join('\n') || 'None', inline: true },
         { name: '🧠 Assistant(s)', value: staffDisplay.assistants.join('\n') || 'None', inline: true },
-        { name: '🧑‍💼 Contracted Players', value: players.length ? players.map(p => `<@${p.userId}>`).join('\n') : 'No players contracted yet.' }
+        {
+          name: '🧑‍💼 Contracted Players',
+          value: players.length ? players.map(p => `<@${p.userId}>`).join('\n') : 'No players contracted yet.'
+        }
       )
-      .setFooter({ text: 'VBL | Volta Blox League', iconURL: interaction.client.user.displayAvatarURL() });
+      .setFooter({
+        text: 'VBL | Volta Blox League',
+        iconURL: interaction.client.user.displayAvatarURL()
+      });
 
-    await interaction.reply({ embeds: [embed] });
+    await interaction.editReply({ embeds: [embed] });
   }
 };

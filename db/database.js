@@ -40,14 +40,13 @@ module.exports = {
     }
   },
 
-  getPlayersByTeam: async (teamName) => {
+ getPlayersByTeam: async (teamName) => {
   try {
     return await Contract.find({ teamName }).exec();
   } catch (err) {
     throw err;
   }
 }
-
   
 };
 
