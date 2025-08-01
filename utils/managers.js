@@ -62,16 +62,18 @@ module.exports = {
       emoji: '<:RMA:1400202568742998067>'
     },
 
+    '853084421930090516': {
+      team: 'Atletico Madrid',
+      emoji: '<:ATM:1400202574971408544>'
+    },
+
    
     /*
     'REAL_SOCIEDAD_MANAGER_ID': {
       team: 'Real Sociedad',
       emoji: '<:RSO:1400889695533273209>'
     },
-    'SEVILLA_MANAGER_ID': {
-      team: 'Sevilla',
-      emoji: '<:SEV:1400889809169289339>'
-    },
+    
     */
   }
 };
