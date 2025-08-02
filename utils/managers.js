@@ -1,7 +1,7 @@
 module.exports = {
   enabled: true,
   managers: {
-    '123': {
+    '650271397762957322': {
       team: 'Arsenal',
       emoji: '<:ARS:1400202180081877073>'
     },
