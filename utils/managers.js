@@ -38,12 +38,12 @@ module.exports = {
       emoji: '<:TOT:1400202166920151180>'
     },
     '459409594301546508': {
-      team: 'Athletic Bilbao',
-      emoji: '<:ATH:1400202577274212402>'
+      team: 'Real Betis',
+      emoji: '<:BET:1401712204012589238>'
     },
     '968807598004502579': {
-      team: 'Athletic Bilbao',
-      emoji: '<:ATH:1400202577274212402>'
+      team: 'Real Betis',
+      emoji: '<:BET:1401712204012589238>'
     },
     '225661506040102913': {
       team: 'Sevilla',
