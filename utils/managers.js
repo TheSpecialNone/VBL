@@ -15,6 +15,14 @@ module.exports = {
       team: 'Chelsea',
       emoji: '<:CHE:1400202177682604294>'
     },
+
+     '849966332917186570': {
+      team: 'Chelsea',
+      emoji: '<:CHE:1400202177682604294>'
+    },
+
+
+    
     '953317964583686234': {
       team: 'Liverpool',
       emoji: '<:LIV:1400202174935470101>'
