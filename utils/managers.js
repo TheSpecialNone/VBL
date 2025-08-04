@@ -43,6 +43,12 @@ module.exports = {
       team: 'Man United',
       emoji: '<:MUN:1400202169595986031>'
     },
+
+     '619980054146842654': {
+      team: 'Man United',
+      emoji: '<:MUN:1400202169595986031>'
+    },
+
     '859476106075963413': {
       team: 'Tottenham',
       emoji: '<:TOT:1400202166920151180>'
