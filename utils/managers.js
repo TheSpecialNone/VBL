@@ -5,6 +5,12 @@ module.exports = {
       team: 'Arsenal',
       emoji: '<:ARS:1400202180081877073>'
     },
+
+    '925316042153164800': {
+      team: 'Arsenal',
+      emoji: '<:ARS:1400202180081877073>'
+    },
+
     '1247069568497877065': {
       team: 'Chelsea',
       emoji: '<:CHE:1400202177682604294>'
