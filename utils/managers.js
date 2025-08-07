@@ -27,10 +27,6 @@ module.exports = {
       team: 'Liverpool',
       emoji: '<:LIV:1400202174935470101>'
     },
-    '526467593049997354': {
-      team: 'Liverpool',
-      emoji: '<:LIV:1400202174935470101>'
-    },
     '1388954837625995417': {
       team: 'Man City',
       emoji: '<:MCI:1400202173203349514>'
