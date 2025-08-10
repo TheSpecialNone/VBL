@@ -24,6 +24,11 @@ module.exports = {
       return interaction.reply({ content: '❌ You are not an authorized manager.', ephemeral: true });
     }
 
+   
+    if (!managers[sender].canContract) {
+      return interaction.reply({ content: '⚠️ You are not authorized to make contracts during this transfer window.', ephemeral: true });
+    }
+
     if (managers[signee.id]) {
       return interaction.reply({ content: '❌ You cannot contract another manager.', ephemeral: true });
     }
