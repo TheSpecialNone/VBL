@@ -58,31 +58,31 @@ module.exports = {
     '359069855359434762': {
       team: 'Tottenham',
       emoji: '<:TOT:1400202166920151180>',
-      canContract: true
+      canContract: false
     },
 
     '454399772489547802': {
       team: 'Tottenham',
       emoji: '<:TOT:1400202166920151180>',
-      canContract: true
+      canContract: false
     },
 
     '459409594301546508': {
       team: 'Real Betis',
       emoji: '<:BET:1401712204012589238>',
-      canContract: true
+      canContract: false
     },
 
     '968807598004502579': {
       team: 'Real Betis',
       emoji: '<:BET:1401712204012589238>',
-      canContract: true
+      canContract: false
     },
 
-    '225661506040102913': {
+    '1353836408325935124': {
       team: 'Sevilla',
       emoji: '<:SEV:1400202562543681707>',
-      canContract: false
+      canContract: true
     },
 
     '537783462481100821': {
