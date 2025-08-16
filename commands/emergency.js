@@ -27,12 +27,6 @@ module.exports = {
       return interaction.reply({ content: '❌ You are not an authorized manager.', ephemeral: true });
     }
 
-
-    if (!managers[sender].canContract) {
-      return interaction.reply({ content: '⚠️ You are not authorized to make contracts.', ephemeral: true });
-    }
-
-    // Basic validation checks
     if (managers[player.id]) {
       return interaction.reply({ content: '❌ You cannot sign another manager.', ephemeral: true });
     }
