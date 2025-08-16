@@ -15,12 +15,10 @@ const {
 
 const emojiMap = {};
 
-
 require('dotenv').config();
 const fs = require('fs');
 const mongoose = require('mongoose');
 const express = require('express');
-
 
 const ANNOUNCE_CHANNEL_ID = '1335624758842101853';
 const MINIMUM_ROLE_ID = '1335618455251980330';
@@ -39,7 +37,6 @@ for (const file of commandFiles) {
 
 const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
 
-
 const app = express();
 const PORT = process.env.PORT || 8080;
 app.get('/', (req, res) => res.send('Bot is online!'));
@@ -54,7 +51,6 @@ mongoose.connect(process.env.MONGODB_URI, {
   console.error('❌ MongoDB connection error:', err);
   process.exit(1);
 });
-
 
 (async () => {
   try {
@@ -82,10 +78,8 @@ client.once('ready', () => {
   console.log('Bot status set to DND with /help activity');
 });
 
-
 const db = require('./db/database');
 const { managers } = require('./utils/managers');
-
 
 client.on(Events.InteractionCreate, async interaction => {
   try {
@@ -96,82 +90,140 @@ client.on(Events.InteractionCreate, async interaction => {
       await command.execute(interaction);
     }
 
- 
+    // Button Interactions
     else if (interaction.isButton()) {
-      const [action, managerId, teamName, signeeId] = interaction.customId.split('_');
-      if (interaction.user.id !== signeeId) {
-        return interaction.reply({ content: "❌ You can't respond to someone else's contract!", ephemeral: true });
-      }
+      const customIdParts = interaction.customId.split('_');
+      
+      // Handle emergency contracts
+      if (customIdParts[0] === 'emergency') {
+        const [, emergencyAction, managerId, teamName, signeeId] = customIdParts;
+        
+        if (interaction.user.id !== signeeId) {
+          return interaction.reply({ content: "❌ You can't respond to someone else's contract!", ephemeral: true });
+        }
 
-      if (!managers[managerId]) {
-        return interaction.update({ content: '❌ Invalid manager data.', components: [], embeds: [] });
-      }
+        if (!managers[managerId]) {
+          return interaction.update({ content: '❌ Invalid manager data.', components: [], embeds: [] });
+        }
 
-      const teamData = managers[managerId];
-      const member = interaction.user;
+        const teamData = managers[managerId];
+        const member = interaction.user;
 
-      if (action === 'accept') {
-        try {
-          const row = await db.getContractedTeam(member.id);
-          if (row) {
-            return interaction.update({ content: `❌ You are already contracted to ${row.emoji} \`${row.teamName}\`.`, components: [], embeds: [] });
+        if (emergencyAction === 'accept') {
+          try {
+            // Check if player already has a contract
+            const existingContract = await db.getContractedTeam(member.id);
+            
+            // For emergency contracts, we override existing contracts
+            if (existingContract) {
+              console.log(`Emergency signing: ${member.id} being moved from ${existingContract.teamName} to ${teamName}`);
+            }
+
+            // Sign the player to the new team
+            await db.contractPlayer(member.id, teamName, teamData.emoji);
+
+            // Announce in signing channel
+            const signingChannel = await interaction.client.channels.fetch('1400085329377099846');
+            await signingChannel.send(`🚨 **EMERGENCY SIGNING** | <@${member.id}> has joined ${teamData.emoji} \`${teamData.team}\``);
+
+            return interaction.update({ 
+              content: `✅ Emergency contract signed with ${teamData.emoji} \`${teamData.team}\`.`, 
+              components: [], 
+              embeds: [] 
+            });
+
+          } catch (error) {
+            console.error('Emergency contract database error:', error);
+            return interaction.update({ content: '⚠️ Database error during emergency signing.', components: [], embeds: [] });
           }
+        }
 
-          await db.contractPlayer(member.id, teamName, teamData.emoji);
-
-          const signingChannel = await interaction.client.channels.fetch('1400085329377099846');
-          signingChannel.send(`🔔 | <@${member.id}> has joined ${teamData.emoji} \`${teamData.team}\``);
-
-          return interaction.update({ content: `✅ Contract signed with ${teamData.emoji} \`${teamData.team}\`.`, components: [], embeds: [] });
-
-        } catch (error) {
-          console.error('Database error:', error);
-          return interaction.update({ content: '⚠️ Database error.', components: [], embeds: [] });
+        if (emergencyAction === 'decline') {
+          return interaction.update({ 
+            content: `❌ | <@${member.id}> has declined the emergency contract.`, 
+            components: [], 
+            embeds: [] 
+          });
         }
       }
+      
+      // Handle regular contracts
+      else {
+        const [action, managerId, teamName, signeeId] = customIdParts;
+        
+        if (interaction.user.id !== signeeId) {
+          return interaction.reply({ content: "❌ You can't respond to someone else's contract!", ephemeral: true });
+        }
 
-      if (action === 'decline') {
-        return interaction.update({ content: `❌ | <@${member.id}> has declined the contract.`, components: [], embeds: [] });
+        if (!managers[managerId]) {
+          return interaction.update({ content: '❌ Invalid manager data.', components: [], embeds: [] });
+        }
+
+        const teamData = managers[managerId];
+        const member = interaction.user;
+
+        if (action === 'accept') {
+          try {
+            const row = await db.getContractedTeam(member.id);
+            if (row) {
+              return interaction.update({ content: `❌ You are already contracted to ${row.emoji} \`${row.teamName}\`.`, components: [], embeds: [] });
+            }
+
+            await db.contractPlayer(member.id, teamName, teamData.emoji);
+
+            const signingChannel = await interaction.client.channels.fetch('1400085329377099846');
+            signingChannel.send(`🔔 | <@${member.id}> has joined ${teamData.emoji} \`${teamData.team}\``);
+
+            return interaction.update({ content: `✅ Contract signed with ${teamData.emoji} \`${teamData.team}\`.`, components: [], embeds: [] });
+
+          } catch (error) {
+            console.error('Database error:', error);
+            return interaction.update({ content: '⚠️ Database error.', components: [], embeds: [] });
+          }
+        }
+
+        if (action === 'decline') {
+          return interaction.update({ content: `❌ | <@${member.id}> has declined the contract.`, components: [], embeds: [] });
+        }
       }
     }
 
+    // Modal Interactions
+    else if (interaction.isModalSubmit() && interaction.customId === 'announceModal') {
+      const member = interaction.member;
+      const user = interaction.user;
+      const guild = interaction.guild;
 
-   else if (interaction.isModalSubmit() && interaction.customId === 'announceModal') {
-  const member = interaction.member;
-  const user = interaction.user;
-  const guild = interaction.guild;
+      const requiredRole = guild.roles.cache.get(MINIMUM_ROLE_ID);
+      if (!requiredRole || member.roles.highest.comparePositionTo(requiredRole) < 0) {
+        return interaction.reply({ content: '🚫 You do not have permission.', ephemeral: true });
+      }
 
-  const requiredRole = guild.roles.cache.get(MINIMUM_ROLE_ID);
-  if (!requiredRole || member.roles.highest.comparePositionTo(requiredRole) < 0) {
-    return interaction.reply({ content: '🚫 You do not have permission.', ephemeral: true });
-  }
+      let message = interaction.fields.getTextInputValue('announcementInput');
 
-  let message = interaction.fields.getTextInputValue('announcementInput');
+      // Replace emoji shortcuts
+      for (const [shortcut, emoji] of Object.entries(emojiMap)) {
+        message = message.replaceAll(shortcut, emoji);
+      }
 
+      const embed = new EmbedBuilder()
+        .setColor('#f2f2f2')
+        .setDescription(message)
+        .setTimestamp()
+        .setFooter({
+          text: member.displayName,
+          iconURL: member.displayAvatarURL({ extension: 'png', size: 64 })
+        });
 
-  for (const [shortcut, emoji] of Object.entries(emojiMap)) {
-    message = message.replaceAll(shortcut, emoji);
-  }
-
-  const embed = new EmbedBuilder()
-    .setColor('#f2f2f2')
-    .setDescription(message)
-    .setTimestamp()
-   .setFooter({
-  text: member.displayName,
-  iconURL: member.displayAvatarURL({ extension: 'png', size: 64 })
-});
-
-
-  try {
-    const announceChannel = await interaction.client.channels.fetch(ANNOUNCE_CHANNEL_ID);
-    await announceChannel.send({ content: '@everyone', embeds: [embed] });
-    await interaction.reply({ content: '✅ Announcement sent!', ephemeral: true });
-  } catch (error) {
-    console.error('Error sending announcement:', error);
-    await interaction.reply({ content: '⚠️ Failed to send the announcement.', ephemeral: true });
-  }
-}
+      try {
+        const announceChannel = await interaction.client.channels.fetch(ANNOUNCE_CHANNEL_ID);
+        await announceChannel.send({ content: '@everyone', embeds: [embed] });
+        await interaction.reply({ content: '✅ Announcement sent!', ephemeral: true });
+      } catch (error) {
+        console.error('Error sending announcement:', error);
+        await interaction.reply({ content: '⚠️ Failed to send the announcement.', ephemeral: true });
+      }
+    }
   } catch (err) {
     console.error('Error handling interaction:', err);
     if (interaction.replied || interaction.deferred) {
@@ -181,6 +233,5 @@ client.on(Events.InteractionCreate, async interaction => {
     }
   }
 });
-
 
 client.login(process.env.TOKEN);
