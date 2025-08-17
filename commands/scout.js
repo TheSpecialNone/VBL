@@ -1,7 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const { managers } = require('../utils/managers');
 
-// Cooldown storage (in memory - resets on bot restart)
 const cooldowns = new Map();
 
 module.exports = {
@@ -35,12 +34,11 @@ module.exports = {
     const position = interaction.options.getString('position');
     const message = interaction.options.getString('message');
 
-    // Check if user is a manager
     if (!managers[user]) {
       return interaction.reply({ content: '❌ Only authorized managers can use this command.', ephemeral: true });
     }
 
-    // Check cooldown (24 hours = 24 * 60 * 60 * 1000 milliseconds)
+  
     const cooldownAmount = 24 * 60 * 60 * 1000;
     const now = Date.now();
 

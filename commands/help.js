@@ -21,7 +21,7 @@ module.exports = {
       })
       .setTimestamp();
 
-    // Player Commands
+    // plr
     embed.addFields({
       name: '👥 Player Commands',
       value: 
@@ -41,7 +41,7 @@ module.exports = {
       inline: false
     });
 
-    // Manager Commands (only show if user is a manager)
+    // manager
     if (isManager) {
       const teamData = managers[user];
       embed.addFields({
@@ -92,7 +92,7 @@ module.exports = {
       });
     }
 
-    // General Info
+    // gen
     embed.addFields({
       name: '📍 Available Positions',
       value: 'GK, CB, CDM, CM, CAM, CF, ST',

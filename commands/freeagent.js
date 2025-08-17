@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const { managers } = require('../utils/managers');
-const db = require('../db/database'); // Firebase version
+const db = require('../db/database'); 
 const cooldowns = new Map();
 
 module.exports = {
@@ -50,7 +50,7 @@ module.exports = {
       return interaction.reply({ content: '❌ Managers cannot register as free agents.', ephemeral: true });
     }
 
-    const cooldownAmount = 24 * 60 * 60 * 1000; // 24 hours in ms
+    const cooldownAmount = 24 * 60 * 60 * 1000; 
     const now = Date.now();
 
     if (cooldowns.has(userId)) {

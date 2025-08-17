@@ -25,7 +25,6 @@ module.exports = {
 
     await interaction.deferReply({ ephemeral: true }); 
 
-    // Find all staff for selected team
     const staff = Object.entries(managers)
       .filter(([, value]) => value.team === selectedTeam)
       .map(([id, value]) => ({ id, emoji: value.emoji }));

@@ -79,17 +79,12 @@ module.exports = {
       canContract: false
     },
 
-    '1353836408325935124': {
+    '1284449163756437544': {
       team: 'Sevilla',
       emoji: '<:SEV:1400202562543681707>',
       canContract: true
     },
 
-    '537783462481100821': {
-      team: 'Sevilla',
-      emoji: '<:SEV:1400202562543681707>',
-      canContract: false
-    },
 
     '650825435696988180': {
       team: 'FC Barcelona',

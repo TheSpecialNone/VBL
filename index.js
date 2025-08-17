@@ -65,7 +65,7 @@ mongoose.connect(process.env.MONGODB_URI, {
   }
 })();
 
-// Bot ready
+
 client.once('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
   client.user.setPresence({
@@ -83,18 +83,15 @@ const { managers } = require('./utils/managers');
 
 client.on(Events.InteractionCreate, async interaction => {
   try {
-    // Slash Command
     if (interaction.isChatInputCommand()) {
       const command = client.commands.get(interaction.commandName);
       if (!command) return;
       await command.execute(interaction);
     }
 
-    // Button Interactions
     else if (interaction.isButton()) {
       const customIdParts = interaction.customId.split('_');
       
-      // Handle emergency contracts
       if (customIdParts[0] === 'emergency') {
         const [, emergencyAction, managerId, teamName, signeeId] = customIdParts;
         
@@ -111,18 +108,16 @@ client.on(Events.InteractionCreate, async interaction => {
 
         if (emergencyAction === 'accept') {
           try {
-            // Check if player already has a contract
             const existingContract = await db.getContractedTeam(member.id);
             
-            // For emergency contracts, we override existing contracts
             if (existingContract) {
               console.log(`Emergency signing: ${member.id} being moved from ${existingContract.teamName} to ${teamName}`);
             }
 
-            // Sign the player to the new team
+    
             await db.contractPlayer(member.id, teamName, teamData.emoji);
 
-            // Announce in signing channel
+     
             const signingChannel = await interaction.client.channels.fetch('1400085329377099846');
             await signingChannel.send(`🚨 **EMERGENCY SIGNING** | <@${member.id}> has joined ${teamData.emoji} \`${teamData.team}\``);
 
@@ -147,7 +142,6 @@ client.on(Events.InteractionCreate, async interaction => {
         }
       }
       
-      // Handle regular contracts
       else {
         const [action, managerId, teamName, signeeId] = customIdParts;
         
@@ -188,7 +182,6 @@ client.on(Events.InteractionCreate, async interaction => {
       }
     }
 
-    // Modal Interactions
     else if (interaction.isModalSubmit() && interaction.customId === 'announceModal') {
       const member = interaction.member;
       const user = interaction.user;
@@ -201,7 +194,6 @@ client.on(Events.InteractionCreate, async interaction => {
 
       let message = interaction.fields.getTextInputValue('announcementInput');
 
-      // Replace emoji shortcuts
       for (const [shortcut, emoji] of Object.entries(emojiMap)) {
         message = message.replaceAll(shortcut, emoji);
       }
