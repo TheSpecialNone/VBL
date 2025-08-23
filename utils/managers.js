@@ -13,16 +13,16 @@ module.exports = {
       canContract: false
     },
 
-    '1247069568497877065': {
+    '1191807850670993468': {
       team: 'Chelsea',
       emoji: '<:CHE:1400202177682604294>',
-      canContract: false
+      canContract: true
     },
 
-    '849966332917186570': {
+    '678331527515471897': {
       team: 'Chelsea',
       emoji: '<:CHE:1400202177682604294>',
-      canContract: false
+      canContract: true
     },
 
     '953317964583686234': {
