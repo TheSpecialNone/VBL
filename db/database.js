@@ -44,8 +44,12 @@ getProfile: async (userId) => {
 },
 
 addMessageXP: async (userId, channel, client) => {
-  let profile = await Profile.findOne({ userId });
-  if (!profile) profile = new Profile({ userId });
+  // Use findOneAndUpdate with upsert to avoid duplicates
+  let profile = await Profile.findOneAndUpdate(
+    { userId },
+    { $setOnInsert: { bux: 0, level: 0, messages: 0 } },
+    { upsert: true, new: true }
+  );
 
   profile.messages += 1;
 
@@ -63,7 +67,7 @@ addMessageXP: async (userId, channel, client) => {
       .setDescription(`You reached **Level ${profile.level}**!\nYou earned **${reward} VBL Tokens**`)
       .setColor(0x2f3136);
 
-    // Send a single message: ping + embed
+
     client.channels.cache.get("1376541428846563390").send({
       content: `<@${userId}>`,
       embeds: [embed]
