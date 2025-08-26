@@ -103,9 +103,9 @@ client.on(Events.MessageCreate, async message => {
     let userDoc = await db.getProfile(message.author.id);
 
     userDoc.messages = (userDoc.messages || 0) + 1;
-    userDoc.xp = (userDoc.xp || 0) + Math.floor(Math.random() * 10) + 5;
 
-    const needed = (userDoc.level + 1) * 5;
+    // level-up formula: scale by 50 messages per level
+    const needed = (userDoc.level + 1) * 50;
 
     if (userDoc.messages >= needed) {
       userDoc.level = (userDoc.level || 0) + 1;
@@ -114,7 +114,7 @@ client.on(Events.MessageCreate, async message => {
       const award = 25 + ((userDoc.level - 1) * 5);
       userDoc.bux = (userDoc.bux || 0) + award;
 
-      await db.saveLevel(userDoc);
+      await db.saveLevel(userDoc); // ensure this exists in database.js
 
       const channel = await client.channels.fetch(ADVANCEMENT_CHANNEL);
       if (channel) {
@@ -133,6 +133,7 @@ client.on(Events.MessageCreate, async message => {
     console.error('Leveling error:', err);
   }
 });
+
 
 // ────────────── BOOST REWARD ──────────────
 client.on(Events.GuildMemberUpdate, async (oldMember, newMember) => {
