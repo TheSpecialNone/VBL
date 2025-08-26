@@ -104,8 +104,8 @@ client.on(Events.MessageCreate, async message => {
 
     userDoc.messages = (userDoc.messages || 0) + 1;
 
-    // level-up formula: scale by 50 messages per level
-    const needed = (userDoc.level + 1) * 50;
+
+    const needed = (userDoc.level + 1) * 5;
 
     if (userDoc.messages >= needed) {
       userDoc.level = (userDoc.level || 0) + 1;
@@ -114,7 +114,7 @@ client.on(Events.MessageCreate, async message => {
       const award = 25 + ((userDoc.level - 1) * 5);
       userDoc.bux = (userDoc.bux || 0) + award;
 
-      await db.saveLevel(userDoc); // ensure this exists in database.js
+      await db.saveLevel(userDoc); 
 
       const channel = await client.channels.fetch(ADVANCEMENT_CHANNEL);
       if (channel) {
