@@ -118,13 +118,17 @@ client.on(Events.MessageCreate, async message => {
 
       const channel = await client.channels.fetch(ADVANCEMENT_CHANNEL);
       if (channel) {
-        const embed = new EmbedBuilder()
-          .setColor('#00FFAA')
-          .setDescription(`🎉 <@${message.author.id}> reached **Level ${userDoc.level}**!\n💸 Awarded **${award} VRF Bux**`)
-          .setThumbnail(message.author.displayAvatarURL({ dynamic: true }))
-          .setTimestamp();
+         const embed = new EmbedBuilder()
+      .setColor('#00FFAA')
+      .setDescription(`🎉 You reached **Level ${userDoc.level}**!\n💸 Awarded **${award} VBL Tokens**`)
+      .setThumbnail(message.author.displayAvatarURL({ dynamic: true }))
+      .setTimestamp();
 
-        channel.send({ embeds: [embed] });
+    
+    channel.send({
+      content: `<@${message.author.id}>`,
+      embeds: [embed]
+    });
       }
     } else {
       await db.saveLevel(userDoc);

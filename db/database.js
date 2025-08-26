@@ -34,38 +34,45 @@ module.exports = {
   getPlayersByTeam: async (teamName) => Contract.find({ teamName }).exec(),
 
   // --- Economy + Levels ---
-  getProfile: async (userId) => {
-    let profile = await Profile.findOne({ userId });
-    if (!profile) {
-      profile = new Profile({ userId });
-      await profile.save();
-    }
-    return profile;
-  },
+getProfile: async (userId) => {
+  const profile = await Profile.findOneAndUpdate(
+    { userId },
+    { $setOnInsert: { bux: 0, level: 0, messages: 0 } },
+    { upsert: true, new: true }
+  );
+  return profile;
+},
 
-  addMessageXP: async (userId, channel, client) => {
-    let profile = await Profile.findOne({ userId });
-    if (!profile) profile = new Profile({ userId });
-    profile.messages += 1;
+addMessageXP: async (userId, channel, client) => {
+  let profile = await Profile.findOne({ userId });
+  if (!profile) profile = new Profile({ userId });
 
-    const needed = (profile.level + 1) * 5;
-    if (profile.messages >= needed) {
-      profile.level++;
-      profile.messages = 0;
+  profile.messages += 1;
 
-      const reward = 25 + (profile.level - 1) * 5;
-      profile.bux += reward;
+  const needed = (profile.level + 1) * 5;
+  if (profile.messages >= needed) {
+    profile.level++;
+    profile.messages = 0;
 
-      const { EmbedBuilder } = require('discord.js');
-      const embed = new EmbedBuilder()
-        .setTitle('🎉 Level Up!')
-        .setDescription(`<@${userId}> you reached **Level ${profile.level}**!\nYou earned **${reward} VBL Tokens**`)
-        .setColor(0x2f3136);
-      client.channels.cache.get("1376541428846563390").send({ embeds: [embed] });
-    }
+    const reward = 25 + (profile.level - 1) * 5;
+    profile.bux += reward;
 
-    await profile.save();
-  },
+    const { EmbedBuilder } = require('discord.js');
+    const embed = new EmbedBuilder()
+      .setTitle('🎉 Level Up!')
+      .setDescription(`You reached **Level ${profile.level}**!\nYou earned **${reward} VBL Tokens**`)
+      .setColor(0x2f3136);
+
+    // Send a single message: ping + embed
+    client.channels.cache.get("1376541428846563390").send({
+      content: `<@${userId}>`,
+      embeds: [embed]
+    });
+  }
+
+  await profile.save();
+},
+
 
   saveLevel: async (profile) => {
   if (!profile) return;
