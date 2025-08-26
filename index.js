@@ -85,6 +85,7 @@ client.once('ready', () => {
   console.log('Bot status set to DND with /help activity');
 });
 
+// ────────────── IMPORT DB ──────────────
 const db = require('./db/database');
 const { managers } = require('./utils/managers');
 
@@ -99,12 +100,12 @@ client.on(Events.MessageCreate, async message => {
   setTimeout(() => talkedRecently.delete(message.author.id), 60000);
 
   try {
-    let userDoc = await db.getOrCreateUser(message.author.id, message.guild.id);
+    let userDoc = await db.getProfile(message.author.id);
 
     userDoc.messages = (userDoc.messages || 0) + 1;
     userDoc.xp = (userDoc.xp || 0) + Math.floor(Math.random() * 10) + 5;
 
-    const needed = (userDoc.level || 0) + 1 * 5; 
+    const needed = (userDoc.level + 1) * 5;
 
     if (userDoc.messages >= needed) {
       userDoc.level = (userDoc.level || 0) + 1;
@@ -119,7 +120,7 @@ client.on(Events.MessageCreate, async message => {
       if (channel) {
         const embed = new EmbedBuilder()
           .setColor('#00FFAA')
-          .setDescription(`🎉 <@${message.author.id}> reached **Level ${userDoc.level}**!\n💸 Awarded **${award} VBL Tokens**`)
+          .setDescription(`🎉 <@${message.author.id}> reached **Level ${userDoc.level}**!\n💸 Awarded **${award} VRF Bux**`)
           .setThumbnail(message.author.displayAvatarURL({ dynamic: true }))
           .setTimestamp();
 
@@ -137,7 +138,7 @@ client.on(Events.MessageCreate, async message => {
 client.on(Events.GuildMemberUpdate, async (oldMember, newMember) => {
   if (!oldMember.premiumSince && newMember.premiumSince) {
     try {
-      let userDoc = await db.getOrCreateUser(newMember.id, newMember.guild.id);
+      let userDoc = await db.getProfile(newMember.id);
       userDoc.bux = (userDoc.bux || 0) + 25;
       await db.saveLevel(userDoc);
 
@@ -164,9 +165,9 @@ client.on(Events.InteractionCreate, async interaction => {
       await command.execute(interaction);
     }
 
-    // BUTTONS (contracts / emergency)
     else if (interaction.isButton()) {
       const customIdParts = interaction.customId.split('_');
+
       if (customIdParts[0] === 'emergency') {
         const [, emergencyAction, managerId, teamName, signeeId] = customIdParts;
 
@@ -212,7 +213,6 @@ client.on(Events.InteractionCreate, async interaction => {
           });
         }
       } 
-      // --- normal contract buttons ---
       else {
         const [action, managerId, teamName, signeeId] = customIdParts;
 
@@ -252,10 +252,8 @@ client.on(Events.InteractionCreate, async interaction => {
       }
     }
 
-    // MODALS (announce)
     else if (interaction.isModalSubmit() && interaction.customId === 'announceModal') {
       const member = interaction.member;
-      const user = interaction.user;
       const guild = interaction.guild;
 
       const requiredRole = guild.roles.cache.get(MINIMUM_ROLE_ID);
