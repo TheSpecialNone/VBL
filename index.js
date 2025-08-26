@@ -119,7 +119,7 @@ client.on(Events.MessageCreate, async message => {
       const channel = await client.channels.fetch(ADVANCEMENT_CHANNEL);
       if (channel) {
         const embed = new EmbedBuilder()
-          .setColor('#ffffffff')
+          .setColor(0xffffff)
           .setDescription(`🎉 You reached **Level ${userDoc.level}**!\n💸 Awarded **${award} VBL Tokens**`)
           .setThumbnail(message.author.displayAvatarURL({ dynamic: true }))
           .setFooter({

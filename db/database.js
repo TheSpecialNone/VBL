@@ -69,7 +69,7 @@ addMessageXP: async (userId, channel, client) => {
           text: 'VBL | Volta Blox League',
           iconURL: 'https://cdn.discordapp.com/attachments/1228373519386284156/1399496074804203621/image.png?ex=6889de89&is=68888d09&hm=c86984bb3b932b1a58a09e426efcd674b6df66b6ac862bdafcb63815f2bb9e30&'
         })
-      .setColor('#ffffffff');
+      .setColor(0xffffff);
 
 
     client.channels.cache.get("1376541428846563390").send({
