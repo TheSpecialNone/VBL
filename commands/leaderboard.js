@@ -7,7 +7,9 @@ module.exports = {
     .setDescription('Show the top VBL Token earners'),
 
   async execute(interaction) {
-    const leaders = await db.getLeaderboard();
+    let leaders = await db.getLeaderboard();
+
+    leaders = leaders.filter(p => p.bux > 0);
 
     let desc = leaders.map((p, i) =>
       `**${i + 1}.** <@${p.userId}> — 💰 ${p.bux} VBL Tokens (Lvl ${p.level})`
@@ -19,12 +21,10 @@ module.exports = {
       .setTitle('🏆 VBL Tokens Leaderboard')
       .setDescription(desc)
       .setFooter({
-          text: 'VBL | Volta Blox League',
-          iconURL: 'https://cdn.discordapp.com/attachments/1228373519386284156/1399496074804203621/image.png?ex=6889de89&is=68888d09&hm=c86984bb3b932b1a58a09e426efcd674b6df66b6ac862bdafcb63815f2bb9e30&'
-        })
-     .setColor(0xffffff);
-
-      
+        text: 'VBL | Volta Blox League',
+        iconURL: 'https://cdn.discordapp.com/attachments/1228373519386284156/1399496074804203621/image.png?ex=6889de89&is=68888d09&hm=c86984bb3b932b1a58a09e426efcd674b6df66b6ac862bdafcb63815f2bb9e30&'
+      })
+      .setColor(0xffffff);
 
     return interaction.reply({ embeds: [embed] });
   }
