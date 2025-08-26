@@ -119,11 +119,13 @@ client.on(Events.MessageCreate, async message => {
       const channel = await client.channels.fetch(ADVANCEMENT_CHANNEL);
       if (channel) {
         const embed = new EmbedBuilder()
-          .setColor('#00FFAA')
+          .setColor('#ffffffff')
           .setDescription(`🎉 You reached **Level ${userDoc.level}**!\n💸 Awarded **${award} VBL Tokens**`)
           .setThumbnail(message.author.displayAvatarURL({ dynamic: true }))
-          .setTimestamp();
-
+          .setFooter({
+          text: 'VBL | Volta Blox League',
+          iconURL: 'https://cdn.discordapp.com/attachments/1228373519386284156/1399496074804203621/image.png?ex=6889de89&is=68888d09&hm=c86984bb3b932b1a58a09e426efcd674b6df66b6ac862bdafcb63815f2bb9e30&'
+        });
         channel.send({
           content: `<@${message.author.id}>`,
           embeds: [embed]
