@@ -94,6 +94,7 @@ const talkedRecently = new Set();
 
 client.on(Events.MessageCreate, async message => {
   if (message.author.bot || !message.guild) return;
+  if (message.channel.id !== "1376541373875884102") return;
 
   if (talkedRecently.has(message.author.id)) return;
   talkedRecently.add(message.author.id);
@@ -104,31 +105,29 @@ client.on(Events.MessageCreate, async message => {
 
     userDoc.messages = (userDoc.messages || 0) + 1;
 
-
     const needed = (userDoc.level + 1) * 5;
 
     if (userDoc.messages >= needed) {
       userDoc.level = (userDoc.level || 0) + 1;
       userDoc.messages = 0;
 
-      const award = 25 + ((userDoc.level - 1) * 5);
+      const award = 5
       userDoc.bux = (userDoc.bux || 0) + award;
 
       await db.saveLevel(userDoc); 
 
       const channel = await client.channels.fetch(ADVANCEMENT_CHANNEL);
       if (channel) {
-         const embed = new EmbedBuilder()
-      .setColor('#00FFAA')
-      .setDescription(`🎉 You reached **Level ${userDoc.level}**!\n💸 Awarded **${award} VBL Tokens**`)
-      .setThumbnail(message.author.displayAvatarURL({ dynamic: true }))
-      .setTimestamp();
+        const embed = new EmbedBuilder()
+          .setColor('#00FFAA')
+          .setDescription(`🎉 You reached **Level ${userDoc.level}**!\n💸 Awarded **${award} VBL Tokens**`)
+          .setThumbnail(message.author.displayAvatarURL({ dynamic: true }))
+          .setTimestamp();
 
-    
-    channel.send({
-      content: `<@${message.author.id}>`,
-      embeds: [embed]
-    });
+        channel.send({
+          content: `<@${message.author.id}>`,
+          embeds: [embed]
+        });
       }
     } else {
       await db.saveLevel(userDoc);

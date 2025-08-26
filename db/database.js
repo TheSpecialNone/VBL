@@ -58,7 +58,7 @@ addMessageXP: async (userId, channel, client) => {
     profile.level++;
     profile.messages = 0;
 
-    const reward = 25 + (profile.level - 1) * 5;
+    const reward = 5
     profile.bux += reward;
 
     const { EmbedBuilder } = require('discord.js');
