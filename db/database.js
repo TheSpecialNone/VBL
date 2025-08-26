@@ -67,6 +67,11 @@ module.exports = {
     await profile.save();
   },
 
+  saveLevel: async (profile) => {
+  if (!profile) return;
+  await profile.save();
+},
+
   getLeaderboard: async () => {
     return Profile.find().sort({ bux: -1 }).limit(10).exec();
   }
