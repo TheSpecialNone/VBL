@@ -22,8 +22,16 @@ const express = require('express');
 
 const ANNOUNCE_CHANNEL_ID = '1335624758842101853';
 const MINIMUM_ROLE_ID = '1335618455251980330';
+const ADVANCEMENT_CHANNEL = '1376541428846563390'; 
 
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+const client = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildMembers
+  ]
+});
 client.commands = new Collection();
 
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
@@ -65,7 +73,6 @@ mongoose.connect(process.env.MONGODB_URI, {
   }
 })();
 
-
 client.once('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
   client.user.setPresence({
@@ -81,6 +88,74 @@ client.once('ready', () => {
 const db = require('./db/database');
 const { managers } = require('./utils/managers');
 
+// ────────────── MESSAGE XP / LEVELING ──────────────
+const talkedRecently = new Set();
+
+client.on(Events.MessageCreate, async message => {
+  if (message.author.bot || !message.guild) return;
+
+  if (talkedRecently.has(message.author.id)) return;
+  talkedRecently.add(message.author.id);
+  setTimeout(() => talkedRecently.delete(message.author.id), 60000);
+
+  try {
+    let userDoc = await db.getOrCreateUser(message.author.id, message.guild.id);
+
+    userDoc.messages = (userDoc.messages || 0) + 1;
+    userDoc.xp = (userDoc.xp || 0) + Math.floor(Math.random() * 10) + 5;
+
+    const needed = (userDoc.level || 0) + 1 * 5; 
+
+    if (userDoc.messages >= needed) {
+      userDoc.level = (userDoc.level || 0) + 1;
+      userDoc.messages = 0;
+
+      const award = 25 + ((userDoc.level - 1) * 5);
+      userDoc.bux = (userDoc.bux || 0) + award;
+
+      await db.saveLevel(userDoc);
+
+      const channel = await client.channels.fetch(ADVANCEMENT_CHANNEL);
+      if (channel) {
+        const embed = new EmbedBuilder()
+          .setColor('#00FFAA')
+          .setDescription(`🎉 <@${message.author.id}> reached **Level ${userDoc.level}**!\n💸 Awarded **${award} VBL Tokens**`)
+          .setThumbnail(message.author.displayAvatarURL({ dynamic: true }))
+          .setTimestamp();
+
+        channel.send({ embeds: [embed] });
+      }
+    } else {
+      await db.saveLevel(userDoc);
+    }
+  } catch (err) {
+    console.error('Leveling error:', err);
+  }
+});
+
+// ────────────── BOOST REWARD ──────────────
+client.on(Events.GuildMemberUpdate, async (oldMember, newMember) => {
+  if (!oldMember.premiumSince && newMember.premiumSince) {
+    try {
+      let userDoc = await db.getOrCreateUser(newMember.id, newMember.guild.id);
+      userDoc.bux = (userDoc.bux || 0) + 25;
+      await db.saveLevel(userDoc);
+
+      const embed = new EmbedBuilder()
+        .setColor('#FF73FA')
+        .setDescription(`💎 <@${newMember.id}> boosted the server!\n+25 VBL Tokens`)
+        .setThumbnail(newMember.user.displayAvatarURL({ dynamic: true }))
+        .setTimestamp();
+
+      const channel = await client.channels.fetch(ADVANCEMENT_CHANNEL);
+      channel.send({ embeds: [embed] });
+    } catch (err) {
+      console.error('Boost reward error:', err);
+    }
+  }
+});
+
+// ────────────── INTERACTIONS ──────────────
 client.on(Events.InteractionCreate, async interaction => {
   try {
     if (interaction.isChatInputCommand()) {
@@ -89,12 +164,12 @@ client.on(Events.InteractionCreate, async interaction => {
       await command.execute(interaction);
     }
 
+    // BUTTONS (contracts / emergency)
     else if (interaction.isButton()) {
       const customIdParts = interaction.customId.split('_');
-      
       if (customIdParts[0] === 'emergency') {
         const [, emergencyAction, managerId, teamName, signeeId] = customIdParts;
-        
+
         if (interaction.user.id !== signeeId) {
           return interaction.reply({ content: "❌ You can't respond to someone else's contract!", ephemeral: true });
         }
@@ -109,24 +184,20 @@ client.on(Events.InteractionCreate, async interaction => {
         if (emergencyAction === 'accept') {
           try {
             const existingContract = await db.getContractedTeam(member.id);
-            
             if (existingContract) {
               console.log(`Emergency signing: ${member.id} being moved from ${existingContract.teamName} to ${teamName}`);
             }
 
-    
             await db.contractPlayer(member.id, teamName, teamData.emoji);
 
-     
             const signingChannel = await interaction.client.channels.fetch('1400085329377099846');
-            await signingChannel.send(`🚨 **EMERGENCY SIGNING** | <@${member.id}> has joined ${teamData.emoji} \`${teamData.team}\``);
+            signingChannel.send(`🚨 **EMERGENCY SIGNING** | <@${member.id}> has joined ${teamData.emoji} \`${teamData.team}\``);
 
             return interaction.update({ 
               content: `✅ Emergency contract signed with ${teamData.emoji} \`${teamData.team}\`.`, 
               components: [], 
               embeds: [] 
             });
-
           } catch (error) {
             console.error('Emergency contract database error:', error);
             return interaction.update({ content: '⚠️ Database error during emergency signing.', components: [], embeds: [] });
@@ -140,11 +211,11 @@ client.on(Events.InteractionCreate, async interaction => {
             embeds: [] 
           });
         }
-      }
-      
+      } 
+      // --- normal contract buttons ---
       else {
         const [action, managerId, teamName, signeeId] = customIdParts;
-        
+
         if (interaction.user.id !== signeeId) {
           return interaction.reply({ content: "❌ You can't respond to someone else's contract!", ephemeral: true });
         }
@@ -169,7 +240,6 @@ client.on(Events.InteractionCreate, async interaction => {
             signingChannel.send(`🔔 | <@${member.id}> has joined ${teamData.emoji} \`${teamData.team}\``);
 
             return interaction.update({ content: `✅ Contract signed with ${teamData.emoji} \`${teamData.team}\`.`, components: [], embeds: [] });
-
           } catch (error) {
             console.error('Database error:', error);
             return interaction.update({ content: '⚠️ Database error.', components: [], embeds: [] });
@@ -182,6 +252,7 @@ client.on(Events.InteractionCreate, async interaction => {
       }
     }
 
+    // MODALS (announce)
     else if (interaction.isModalSubmit() && interaction.customId === 'announceModal') {
       const member = interaction.member;
       const user = interaction.user;
