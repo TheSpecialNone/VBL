@@ -85,11 +85,9 @@ client.once('ready', () => {
   console.log('Bot status set to DND with /help activity');
 });
 
-// ────────────── IMPORT DB ──────────────
 const db = require('./db/database');
 const { managers } = require('./utils/managers');
 
-// ────────────── MESSAGE XP / LEVELING ──────────────
 const talkedRecently = new Set();
 
 client.on(Events.MessageCreate, async message => {
@@ -103,16 +101,16 @@ client.on(Events.MessageCreate, async message => {
   try {
     let userDoc = await db.getProfile(message.author.id);
 
-    userDoc.messages = (userDoc.messages || 0) + 1;
+    userDoc.messages += 1;
 
     const needed = (userDoc.level + 1) * 5;
 
     if (userDoc.messages >= needed) {
-      userDoc.level = (userDoc.level || 0) + 1;
+      userDoc.level += 1;
       userDoc.messages = 0;
 
-      const award = 5
-      userDoc.bux = (userDoc.bux || 0) + award;
+      const award = 5;
+      userDoc.bux += award;
 
       await db.saveLevel(userDoc); 
 
@@ -139,13 +137,11 @@ client.on(Events.MessageCreate, async message => {
   }
 });
 
-
-// ────────────── BOOST REWARD ──────────────
 client.on(Events.GuildMemberUpdate, async (oldMember, newMember) => {
-  if (!oldMember.premiumSince && newMember.premiumSince) {
+  if (oldMember.premiumSinceTimestamp !== newMember.premiumSinceTimestamp && newMember.premiumSinceTimestamp) {
     try {
       let userDoc = await db.getProfile(newMember.id);
-      userDoc.bux = (userDoc.bux || 0) + 25;
+      userDoc.bux += 25;
       await db.saveLevel(userDoc);
 
       const embed = new EmbedBuilder()
@@ -162,7 +158,6 @@ client.on(Events.GuildMemberUpdate, async (oldMember, newMember) => {
   }
 });
 
-// ────────────── INTERACTIONS ──────────────
 client.on(Events.InteractionCreate, async interaction => {
   try {
     if (interaction.isChatInputCommand()) {
