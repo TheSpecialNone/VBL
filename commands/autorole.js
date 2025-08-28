@@ -8,7 +8,7 @@ const roleNameMap = {
   "Man City": "Manchester City",
   "Man United": "Manchester United",
   "Tottenham": "Tottenham Hotspur",
-  "Atletico Madrid": "Atlético de Madrid ", 
+  "Atletico Madrid": "Atlético de Madrid", 
 };
 
 module.exports = {
