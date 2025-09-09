@@ -1,6 +1,12 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const db = require('../db/database');
 
+function makeProgressBar(current, needed, length = 10) {
+  const filled = Math.round((current / needed) * length);
+  const empty = length - filled;
+  return '▰'.repeat(filled) + '▱'.repeat(empty);
+}
+
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('leaderboard')
@@ -11,9 +17,18 @@ module.exports = {
 
     leaders = leaders.filter(p => p.bux > 0);
 
-    let desc = leaders.map((p, i) =>
-      `**${i + 1}.** <@${p.userId}> — 💰 ${p.bux} VBL Tokens (Lvl ${p.level})`
-    ).join('\n');
+    leaders.sort((a, b) => {
+      if (b.level === a.level) {
+        return b.bux - a.bux;
+      }
+      return b.level - a.level;
+    });
+
+    let desc = leaders.map((p, i) => {
+      const needed = (p.level + 1) * 5; 
+      const bar = makeProgressBar(p.messages, needed, 12);
+      return `**${i + 1}.** <@${p.userId}> — 💰 ${p.bux} Tokens | 🆙 Lvl ${p.level}\n\`${bar}\` (${p.messages}/${needed})`;
+    }).join('\n\n');
 
     if (!desc) desc = "No data yet.";
 

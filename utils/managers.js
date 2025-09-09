@@ -31,7 +31,7 @@ module.exports = {
       canContract: false
     },
 
-    '1388954837625995417': {
+    '1377337166824472606': {
       team: 'Man City',
       emoji: '<:MCI:1400202173203349514>',
       canContract: false
