@@ -11,27 +11,27 @@ It handles the front office stuff so you don't have to do it all manually in a s
 **Team management**
 | Command | What it does |
 |---|---|
-| `contract` | Sign or update a player's contract |
-| `freeagent` | Move a player to the free agent pool |
+| `contract` | Sign a player for your team |
+| `emergency` | Emergency sign a player for your team |
+| `freeagent` | Allows you to post yourself in agency |
 | `release` | Release a player from a team |
 | `forcerelease` | Admin override to release a player without team approval |
 | `showteam` | Display a team's current roster |
-| `scout` | Pull up scouting info on a player |
+| `scout` | Allows manager to post what positions they need |
 
 **League ops**
 | Command | What it does |
 |---|---|
-| `leaderboard` | Show current league standings |
-| `vblstats` | Pull league or player stats |
-| `resetstats` | Wipe stats for a new season |
-| `friendly` | Set up a friendly (non-league) match |
-| `announce` | Push an announcement to the league channel |
+| `leaderboard` | Show current top chatters |
+| `vblstats` | Shows how many coins you have and levels for chatting |
+| `resetstats` | Wipes a users stats |
+| `friendly` | Pings for a friendly in dedicated channel |
+| `announce` | Push an announcement to the announcements channel |
 
 **Admin & utility**
 | Command | What it does |
 |---|---|
-| `autorole` | Auto-assign roles based on league status |
-| `emergency` | Break-glass command for admins |
+| `autorole` | Auto-assign roles based on what team players are in database |
 | `help` | List commands and how to use them |
 
 ## Project structure
@@ -69,6 +69,8 @@ Found a bug or have an idea for a command? Open an issue or send a PR. Keep comm
 ## License
 
 MIT License. See [LICENSE](LICENSE) for details.
+
+## Used by asapmonty0 in Pure Soccer League as well as my own Volta Blox League, amassing over 1 million hours of playtime!
 
 ---
 
