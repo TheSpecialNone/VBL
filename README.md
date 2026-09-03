@@ -4,7 +4,7 @@ This is a Discord bot I built to run my own ro-soccer league, and I decided to m
 
 ## What it does
 
-It handles the front office stuff so you don't have to do it all manually in a spreadsheet. Sign players, cut them, run free agency, track stats, all through Discord commands.
+It handles the front office stuff so you don't have to do it all manually. Sign players, release them, run free agency, track stats, all through Discord commands.
 
 ## Commands
 
